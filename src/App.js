@@ -1,24 +1,56 @@
-import logo from './logo.svg';
+import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom';
 import './App.css';
+import LoginPage from './pages/LoginPage';
+import HomePage from './pages/HomePage';
+import SignUpPage from './pages/SignUpPage';
+import AllSessionsPage from './pages/AllSessionsPage';
+import SessionsPage from './pages/SessionsPage';
+import QrCode from './pages/QrCodePage';
+
+
+const toggle = () => 
+  {
+    const toggleButton = document.getElementsByClassName('menu')[0]
+    const navbarLinks = document.getElementsByClassName('links')[0]
+    navbarLinks.classList.toggle('active');
+  }
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="navContainer">
+        <nav>
+          <div className="logo">
+              M
+          </div>
+
+          <div className="menu" onClick={toggle}>
+            <span className="bar"></span>
+            <span className="bar"></span>
+            <span className="bar"></span>
+          </div>
+          <div className="links">
+          <Link to="/" className="link p-5">Home</Link>
+            <Link to="/login" className="link p-5"> Login</Link>
+            <Link to="/signup" className="link p-5"> Sign Up</Link>
+            <Link to="/sessions" className="link p-5"> All Sessions</Link>
+          </div> 
+        </nav>
+      </div>
+
+      <div className="App">
+          <Routes>
+            {/* <Route path="/" element={<HomePage/>}/> */}
+            <Route path="/" element={<LoginPage/>}/>
+            <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/signup" element={<SignUpPage/>}/>
+            <Route path="/sessions" element={<AllSessionsPage/>}/>
+            <Route path="/session/:id" element={<SessionsPage/>}/>
+            <Route path="/qrcode/:id" element={<QrCode />}/>
+          </Routes>
+      </div>
+
+    </Router>
   );
 }
 

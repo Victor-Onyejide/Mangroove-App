@@ -1,0 +1,59 @@
+{
+    "user_id": "12345",
+    "username": "Victor Onyejide",
+    "sessions": [
+      {
+        "session_id": "session_001",
+        "song_title": "Song Title Example 1",
+        "akas": ["AKA 1", "AKA 2"],
+        "songwriters": [
+          {
+            "name": "Babington Martins",
+            "affiliation": "Warner",
+            "publisher": "Sony",
+            "role": "Singer",
+            "ownership": "20%",
+            "contact_info": "Contact Info"
+          },
+          {
+            "name": "Ashley Paul",
+            "affiliation": "Mavins",
+            "publisher": "UMG",
+            "role": "Guitar",
+            "ownership": "20%",
+            "contact_info": "Contact Info"
+          }
+        ],
+        "agreement": "The undersigned all agree that the information above is correct",
+        "signatures": [
+          {
+            "name": "Babington Martins",
+            "date": "01/01/2025"
+          }
+        ]
+      },
+      {
+        "session_id": "session_002",
+        "song_title": "Song Title Example 2",
+        "akas": ["AKA 1"],
+        "songwriters": [
+          {
+            "name": "Jennifer Hays",
+            "affiliation": "Mstudios",
+            "publisher": "Independent",
+            "role": "Vocalist",
+            "ownership": "25%",
+            "contact_info": "Contact Info"
+          }
+        ],
+        "agreement": "The undersigned all agree that the information above is correct",
+        "signatures": [
+          {
+            "name": "Jennifer Hays",
+            "date": "01/01/2025"
+          }
+        ]
+      }
+    ]
+  }
+  

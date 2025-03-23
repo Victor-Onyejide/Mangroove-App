@@ -1,0 +1,456 @@
+{
+  "user_id": "12345",
+  "username": "user_example",
+  "sessions": [
+    {
+      "id": 1,
+      "song_title": "Song1",
+      "songwriters": [
+        {
+          "name": "Babington Martins",
+          "affiliation": "Warner",
+          "publisher": "Sony",
+          "role": "Singer",
+          "ownership": "20%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Ashley Paul",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Guitar",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Jennifer Hays",
+          "affiliation": "Mstudios",
+          "publisher": "Independent",
+          "role": "Vocalist",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "song_title": "Song2",
+      "songwriters": [
+        {
+          "name": "John Doe",
+          "affiliation": "Universal",
+          "publisher": "Sony",
+          "role": "Drummer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Jane Doe",
+          "affiliation": "Warner",
+          "publisher": "EMI",
+          "role": "Pianist",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Tom Richards",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Composer",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "song_title": "Song3",
+      "songwriters": [
+        {
+          "name": "Sarah Clark",
+          "affiliation": "Independent",
+          "publisher": "Independent",
+          "role": "Vocalist",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "George Brown",
+          "affiliation": "Universal",
+          "publisher": "Sony",
+          "role": "Guitarist",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Mark Spencer",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Bass Guitar",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "song_title": "Song4",
+      "songwriters": [
+        {
+          "name": "Chris Martin",
+          "affiliation": "Independent",
+          "publisher": "UMG",
+          "role": "Singer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Rita Singh",
+          "affiliation": "Warner",
+          "publisher": "EMI",
+          "role": "Composer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "John Beck",
+          "affiliation": "Sony",
+          "publisher": "Sony",
+          "role": "Drummer",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "song_title": "Song5",
+      "songwriters": [
+        {
+          "name": "Olivia Wilde",
+          "affiliation": "Warner",
+          "publisher": "Sony",
+          "role": "Vocalist",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Martha Clark",
+          "affiliation": "UMG",
+          "publisher": "EMI",
+          "role": "Pianist",
+          "ownership": "20%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Peter Allen",
+          "affiliation": "Mavins",
+          "publisher": "Independent",
+          "role": "Composer",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "song_title": "Song6",
+      "songwriters": [
+        {
+          "name": "Kate Roberts",
+          "affiliation": "Independent",
+          "publisher": "UMG",
+          "role": "Singer",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "James Lewis",
+          "affiliation": "Warner",
+          "publisher": "Sony",
+          "role": "Guitarist",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Benjamin Carter",
+          "affiliation": "Universal",
+          "publisher": "EMI",
+          "role": "Pianist",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "song_title": "Song7",
+      "songwriters": [
+        {
+          "name": "Alexis King",
+          "affiliation": "Independent",
+          "publisher": "Sony",
+          "role": "Guitarist",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Linda Moore",
+          "affiliation": "Universal",
+          "publisher": "UMG",
+          "role": "Drummer",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Gary Stevens",
+          "affiliation": "Warner",
+          "publisher": "EMI",
+          "role": "Composer",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "song_title": "Song8",
+      "songwriters": [
+        {
+          "name": "David Hill",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Vocalist",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Sara Barnes",
+          "affiliation": "Independent",
+          "publisher": "Independent",
+          "role": "Composer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Thomas Cooper",
+          "affiliation": "Sony",
+          "publisher": "Sony",
+          "role": "Guitarist",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "song_title": "Song9",
+      "songwriters": [
+        {
+          "name": "Jessica Turner",
+          "affiliation": "Warner",
+          "publisher": "UMG",
+          "role": "Vocalist",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Zachary Reed",
+          "affiliation": "Sony",
+          "publisher": "EMI",
+          "role": "Composer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Natalie Green",
+          "affiliation": "Independent",
+          "publisher": "Independent",
+          "role": "Drummer",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "song_title": "Song10",
+      "songwriters": [
+        {
+          "name": "Sophia Taylor",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Singer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Mason Gray",
+          "affiliation": "Warner",
+          "publisher": "Sony",
+          "role": "Pianist",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Ella Davis",
+          "affiliation": "Universal",
+          "publisher": "EMI",
+          "role": "Composer",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "song_title": "Song11",
+      "songwriters": [
+        {
+          "name": "William Hall",
+          "affiliation": "Independent",
+          "publisher": "Independent",
+          "role": "Guitarist",
+          "ownership": "35%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Amanda Lewis",
+          "affiliation": "UMG",
+          "publisher": "Sony",
+          "role": "Drummer",
+          "ownership": "35%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Henry Clark",
+          "affiliation": "Warner",
+          "publisher": "EMI",
+          "role": "Vocalist",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "song_title": "Song12",
+      "songwriters": [
+        {
+          "name": "Natalie Scott",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Guitarist",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Ian Wright",
+          "affiliation": "Sony",
+          "publisher": "EMI",
+          "role": "Vocalist",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Holly Young",
+          "affiliation": "Universal",
+          "publisher": "Independent",
+          "role": "Composer",
+          "ownership": "50%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "song_title": "Song13",
+      "songwriters": [
+        {
+          "name": "Lucas King",
+          "affiliation": "Independent",
+          "publisher": "Sony",
+          "role": "Composer",
+          "ownership": "25%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Emma Phillips",
+          "affiliation": "Warner",
+          "publisher": "UMG",
+          "role": "Vocalist",
+          "ownership": "35%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Oliver Davis",
+          "affiliation": "Mavins",
+          "publisher": "EMI",
+          "role": "Pianist",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "song_title": "Song14",
+      "songwriters": [
+        {
+          "name": "Ava Carter",
+          "affiliation": "Independent",
+          "publisher": "Sony",
+          "role": "Guitarist",
+          "ownership": "20%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Oscar Green",
+          "affiliation": "Mavins",
+          "publisher": "UMG",
+          "role": "Vocalist",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Isabella White",
+          "affiliation": "Universal",
+          "publisher": "EMI",
+          "role": "Composer",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "song_title": "Song15",
+      "songwriters": [
+        {
+          "name": "Ella James",
+          "affiliation": "Independent",
+          "publisher": "Independent",
+          "role": "Vocalist",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Lucas Walker",
+          "affiliation": "UMG",
+          "publisher": "Sony",
+          "role": "Composer",
+          "ownership": "30%",
+          "contact_info": "Contact Info"
+        },
+        {
+          "name": "Benjamin Harris",
+          "affiliation": "Sony",
+          "publisher": "EMI",
+          "role": "Pianist",
+          "ownership": "40%",
+          "contact_info": "Contact Info"
+        }
+      ]
+    }
+  ]
+}
