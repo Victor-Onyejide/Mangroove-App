@@ -17,7 +17,9 @@ a, .logo{
   /* text-decoration: none; Removes underline */
   color: #02C979; /* Optional: makes the link color the same as surrounding text */
 }
-
+hr {
+  color: black;
+}
 /* Nav Bar */
 .navContainer{
   margin-bottom: 150px;

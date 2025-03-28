@@ -6,6 +6,7 @@ import SignUpPage from './pages/SignUpPage';
 import AllSessionsPage from './pages/AllSessionsPage';
 import SessionsPage from './pages/SessionsPage';
 import QrCode from './pages/QrCodePage';
+import GuestPage from './pages/GuestPage';
 
 
 const toggle = () => 
@@ -20,9 +21,9 @@ function App() {
     <Router>
       <div className="navContainer">
         <nav>
-          <div className="logo">
+          <Link to="/" className="logo">
               M
-          </div>
+          </Link>
 
           <div className="menu" onClick={toggle}>
             <span className="bar"></span>
@@ -47,6 +48,7 @@ function App() {
             <Route path="/sessions" element={<AllSessionsPage/>}/>
             <Route path="/session/:id" element={<SessionsPage/>}/>
             <Route path="/qrcode/:id" element={<QrCode />}/>
+            <Route path="/guest" element={<GuestPage/>}/>
           </Routes>
       </div>
 

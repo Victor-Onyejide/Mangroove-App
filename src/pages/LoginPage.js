@@ -1,25 +1,59 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { loginAsUser } from "../features/userSlice";
+import user from './database.json';
+
 export default function LoginPage()
 {
-  const navigate = useNavigate();
+    const { sessionId, shareLink } = useSelector((state) => state.user);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleLogin = () => {
+        const getSession = user.sessions.find(session => session.id.toString() === sessionId);
+        dispatch(loginAsUser(getSession))
+        if(shareLink)
+        {
+            navigate(`/session/${sessionId}`);
+        }
+        else{
+            
+            navigate('/sessions')
+        }
+        // else {
+        //     const getSession = user.sessions.find(session => session.id.toString() === sessionId);
+        //     dispatch(loginAsUser(getSession))
+        //     navigate('/sessions')
+        // }
+
+    }
+    
 
     return(
         <div className="loginPage">
             <h2>Log in to your account</h2>
             <div className="form mt-4">
-                <input 
+                <input  
                     class="email mt-3" 
                     type="text" placeholder="Enter your email"
+                    onChange={(e)=>setEmail(e.target.value)}
                 />
 
                 <input 
-                    class="password mt-3" 
+                    class="password mt-3 mb-3" 
                     type="password" placeholder="Password"
+                    onChange={(e)=> setPassword(e.target.value)}
                 /> 
+                <hr/>
+                <p className="text-dark">Sign In as guest <Link to="/guest">Guest</Link></p>
 
                 <button 
                     className="login-btn mt-3"
-                    onClick={() => navigate("/sessions")}
+                    onClick={() => handleLogin()}
                 > 
                     Continue
                 </button>
