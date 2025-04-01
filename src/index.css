@@ -24,6 +24,7 @@ hr {
 .navContainer{
   margin-bottom: 150px;
  position: relative;
+ z-index: 10;
 }
 nav {
   position: fixed;
@@ -192,12 +193,19 @@ button{
 .share-icon{
   color: #02C979;
 }
+.qrcode-container{
+  padding: 20px 20px 20px 20px;
+}
 @media (max-width:950px) {
   .signupPage {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     width: 65%;
+  }
+  .signupPage form{
+    padding: 20px 10px 20px 10px;
+
   }
   .signupPage .content h2{
     margin-top: 50px;

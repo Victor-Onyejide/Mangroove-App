@@ -8,7 +8,7 @@ export default function SignUpPage(){
             <div className="wrapper">
                 <h2 className="mt-5"><strong>Sign up for your <br/>Mangroove account</strong></h2>
                 <div className="form">
-                    <input 
+                   <input 
                         class="email mt-3" 
                         type="text" placeholder="Enter your email"
                     />
@@ -17,7 +17,7 @@ export default function SignUpPage(){
                         class="role mt-3" 
                         type="text" placeholder="Enter your role"
                     />
-
+ 
                     <input 
                         class="password mt-3" 
                         type="password" placeholder="Password"

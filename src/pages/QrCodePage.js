@@ -40,7 +40,7 @@ const QrCode = () => {
     };
 
     return (
-        <div className="qrcode__container">
+        <div className="qrcode-container">
             {session ? (
                 <div>
                     <h1>Start a New Session</h1>
