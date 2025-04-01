@@ -2,11 +2,37 @@ import { useParams } from "react-router-dom";
 import user from './database.json';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setSessionId, setShareLink } from "../features/userSlice";
+
+
 export default function SessionsPage() {
   const { id } = useParams();
-  const session = user.sessions.find(session => session.id.toString() === id);
+  const [session, setSession] = useState();
+
   const navigate = useNavigate();
+  const {isLoggedIn} = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  // GET SESSIONS
+  const fetchSessions = () => {
+    const getSession = user.sessions.find(session => session.id.toString() === id);
+    setSession(getSession)
+  }
+
   // Validate ID: Example - must be a number
+  useEffect(() => {
+      if (isLoggedIn === false)
+      {
+        dispatch(setSessionId(id));
+        dispatch(setShareLink(true));
+
+        navigate('/login');
+      }
+
+    if(id) fetchSessions();
+  });
+
   if (!/^\d+$/.test(id)) {
     return <div className="alert alert-danger">Invalid Session ID</div>;
   }
@@ -14,6 +40,7 @@ export default function SessionsPage() {
   if (!session) {
     return <p className="alert alert-warning">Session not found</p>; // Show a message if the session is not found
   }
+  
 
   return (
     <div className="sessionPage container">
