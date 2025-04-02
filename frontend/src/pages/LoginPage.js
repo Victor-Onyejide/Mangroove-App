@@ -16,6 +16,7 @@ export default function LoginPage()
     const handleLogin = () => {
         const getSession = user.sessions.find(session => session.id.toString() === sessionId);
         dispatch(loginAsUser(getSession))
+        //TODO: Remove shareLink checker and then check the user. The user should have 
         if(shareLink)
         {
             navigate(`/session/${sessionId}`);
@@ -24,11 +25,12 @@ export default function LoginPage()
             
             navigate('/sessions')
         }
-        // else {
-        //     const getSession = user.sessions.find(session => session.id.toString() === sessionId);
-        //     dispatch(loginAsUser(getSession))
-        //     navigate('/sessions')
-        // }
+
+        //TODO: add dispatch signin 
+        // const submitHandler = (e) => {
+        //     e.preventDefault();
+        //     dispatch(signin(email, password)); 
+        // };
 
     }
     
