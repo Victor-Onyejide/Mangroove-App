@@ -20,6 +20,7 @@ app.get("/api/", (req, res) => {
 });
 
 app.post('/api/create-session', (req, res) => {
+    //TODO: Update this creation with the proper DB
     const newSession = {
         sessionId: '1',
         name: req.body.name,
