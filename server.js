@@ -1,23 +1,25 @@
 import dotenv from "dotenv";
-// const bp = require('body-parser');
-import path from "path";
-// dotenv.config({path:'./server/.env'});
-import express from "express"
-// const routes = require('./routes/index')s
-const app = express();
-// const dbConfig = require('./config/dbConfig');
-app.use(express.json())
-// app.use('/api', routes)
-import { v4 as uuidv4 } from 'uuid';
+import express from "express";
+import process from "process";
+import mongoose from "mongoose";
 
+
+const app = express();
 const PORT = 4000;
 
+dotenv.config();
 app.use(express.json());
 
-let sessions = [];
-app.get("/api/", (req, res) => {
- res.json("Hello")
-});
+
+//Connecting Database
+mongoose.connect(process.env.MONGODB_URL)
+  .then(() => {
+    console.log('Connected to MongoDB!');
+  })
+  .catch(err => {
+    console.error('Error connecting to MongoDB:', err);
+  });
+
 
 app.post('/api/create-session', (req, res) => {
     //TODO: Update this creation with the proper DB
