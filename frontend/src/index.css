@@ -14,8 +14,7 @@ code {
     monospace;
 }
 a, .logo{
-  /* text-decoration: none; Removes underline */
-  color: #02C979; /* Optional: makes the link color the same as surrounding text */
+  color: #02C979;
 }
 hr {
   color: black;
@@ -32,13 +31,11 @@ nav {
 }
 nav {
   display: flex;
-  /* border: 1px solid black; */
   width: 100%;
   background-color: #15191D;
   padding: 30px 40px 30px 40px;
   justify-content: space-between;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
-  /* position: absolute; */
 }
 
 .links{
@@ -70,12 +67,13 @@ nav .menu .bar {
 }
 
 button {
-  all: unset; /* Removes all default styles */
-  background: none; /* Removes default background */
-  border: none; /* Removes default border */
-  padding: 0; /* Removes default padding */
-  font-size: inherit; /* Inherits the font size from the parent */
-  cursor: pointer; /* Ensures the button behaves like a clickable element */
+  all: unset;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  cursor: pointer; 
+  color: #02C979;
 }
 
 input{
@@ -101,8 +99,6 @@ button{
   background-color: white;
   border-radius: 20px;
   padding: 30px 45px 30px 45px;
-  /* height: 400px; */
-  /* width: 400px; */
 }
 
 .loginPage .form input,
@@ -120,19 +116,13 @@ button{
   font-size: 14px;
   opacity: 1;
 }
-.loginPage .form .login-btn,
-.signupPage .form .login-btn
-{
-  height: 60px;
-  background-color: #008751;
-  text-align: center;
-}
-.continue-btn{
-  
+
+.action-btn{
     height: 60px;
     background-color: #008751;
     text-align: center;
     width: 100%;
+    color: white;
   
 }
 .loginPage .signupText{
