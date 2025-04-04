@@ -24,7 +24,7 @@ export default function SignUpPage(){
                     />
 
                     <button 
-                        className="login-btn mt-3"
+                        className="action-btn mt-3"
                         onClick={() => navigate("/sessions")}
                     > 
                         Continue

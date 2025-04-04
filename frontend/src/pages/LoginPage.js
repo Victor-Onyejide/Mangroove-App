@@ -54,7 +54,7 @@ export default function LoginPage()
                 <p className="text-dark">Sign In as guest <Link to="/guest">Guest</Link></p>
 
                 <button 
-                    className="login-btn mt-3"
+                    className="action-btn mt-3"
                     onClick={() => handleLogin()}
                 > 
                     Continue
