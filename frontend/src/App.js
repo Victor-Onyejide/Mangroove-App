@@ -7,6 +7,7 @@ import AllSessionsPage from './pages/AllSessionsPage';
 import SessionsPage from './pages/SessionsPage';
 import QrCode from './pages/QrCodePage';
 import GuestPage from './pages/GuestPage';
+import { ToastContainer } from 'react-toastify';
 
 
 const toggle = () => 
@@ -19,6 +20,7 @@ const toggle = () =>
 function App() {
   return (
     <Router>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="navContainer">
         <nav>
           <Link to="/" className="logo">
