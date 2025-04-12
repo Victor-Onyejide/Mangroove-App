@@ -17,11 +17,9 @@ export default function LoginPage()
     const dispatch = useDispatch();
 
     const handleLogin = async() => {
-        // const getSession = user.sessions.find(session => session.id.toString() === sessionId);
         try{
             const {data} = await axios.post('/api/user/login', {email,password});
             localStorage.setItem('userInfo', JSON.stringify(data));
-            // dispatch(loginAsUser(getSession));
             navigate('/sessions')
             toast.success('Welcome!')
 
@@ -32,8 +30,6 @@ export default function LoginPage()
             toast.error(err);
 
         }
-
-        //TODO: Remove shareLink checker and then check the user. The user should have 
         if(shareLink)
         {
             navigate(`/session/${sessionId}`);
