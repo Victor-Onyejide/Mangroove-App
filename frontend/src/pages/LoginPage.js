@@ -1,8 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { loginAsUser } from "../features/userSlice";
 import user from './database.json';
+import { toast } from 'react-toastify';
+import axios from "axios";
+
 
 export default function LoginPage()
 {
@@ -13,19 +16,24 @@ export default function LoginPage()
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const handleLogin = () => {
-        const getSession = user.sessions.find(session => session.id.toString() === sessionId);
-        dispatch(loginAsUser(getSession))
-        //TODO: Remove shareLink checker and then check the user. The user should have 
+    const handleLogin = async() => {
+        try{
+            const {data} = await axios.post('/api/user/login', {email,password});
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            navigate('/sessions')
+            toast.success('Welcome!')
+
+
+        }
+        catch(err){
+            console.log('Error', err)
+            toast.error(err);
+
+        }
         if(shareLink)
         {
             navigate(`/session/${sessionId}`);
         }
-        else{
-            
-            navigate('/sessions')
-        }
-
         //TODO: add dispatch signin 
         // const submitHandler = (e) => {
         //     e.preventDefault();
@@ -33,10 +41,9 @@ export default function LoginPage()
         // };
 
     }
-    
-
     return(
         <div className="loginPage">
+
             <h2>Log in to your account</h2>
             <div className="form mt-4">
                 <input  
