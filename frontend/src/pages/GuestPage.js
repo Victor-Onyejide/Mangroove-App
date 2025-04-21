@@ -9,39 +9,59 @@ export default function GuestPage()
     const { sessionId, shareLink } = useSelector((state) => state.user);
     const [hasLink, setHasLInk] = useState(false);
     const [session, link] = useState();
+    const [username, setUsername] = useState();
+    const [affiliation, setAffliliation] = useState();
+    const [publisher, setPublisher] = useState();
+    const [role, setRole] = useState();
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const handleGuest = () => {
+        //TODO: Guest route
         if(shareLink)
         {
             setHasLInk(true);
             navigate(`/session/${sessionId}`)
         }
         navigate('/sessions')
-        
     }
-
-
     return(
         <div className="loginPage">
-                 <h2 className="font-weight-bold">Welcome, Guest!</h2>
-                 <p>Please fill form below to continue.</p>
+             <h2 className="font-weight-bold">Welcome, Guest!</h2>
+            <p>Please fill form below to continue.</p>
             <div className="form mt-4">
-
-                <input 
-                    class="role mt-3" 
-                    type="text" placeholder="Enter your role"
-                />
  
-                <input 
-                    class="password mt-3" 
-                    type="text" placeholder="Enter Your Name"
-                />
+            <input 
+                class="mt-3" 
+                type="text" placeholder="Enter your Name"
+                onChange={(e) => setUsername(e.target.value)}
+                required
+            />
+
+            <input 
+                class="mt-3" 
+                type="text" placeholder="Enter your Affiliation"
+                onChange={(e) => setAffliliation(e.target.value)}
+                required
+            />
+
+            <input 
+                class="mt-3" 
+                type="text" placeholder="Enter your Publisher"
+                onChange={(e) => setPublisher(e.target.value)}
+                required
+            />
+
+            <input 
+                class="mt-3" 
+                type="text" placeholder="Enter your role"
+                onChange={(e) => setRole(e.target.value)}
+                required
+            />
 
                {!hasLink && <input 
-                    class="password mt-3" 
+                    class="mt-3" 
                     type="text" placeholder="Enter Session ID"
                 />
                }

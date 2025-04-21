@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import User from '../models/userModel.js';
 import Session from '../models/sessionModel.js';
 import {generateToken, isAuth, isAdmin} from '../utils.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const userRouter = express.Router();
 
@@ -35,6 +36,9 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
         username: req.body.username,
         email: req.body.email,
         password: bcrypt.hashSync(req.body.password, 8),
+        affiliation: req.body.affiliation,
+        publisher: req.body.publisher,
+        role: req.body.role,
         isAdmin: req.body.isAdmin || false,
     });
 
@@ -49,20 +53,56 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
     })
 }));
 
-userRouter.post('/session', isAuth, expressAsyncHandler(async(req, res) => {
+userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) => {
 
-    const {songTitle, songwriters, joinLink, linkExpiresAt} = req.body;
+    const {
+        songTitle,
+        userId
+    } = req.body;
+    
 
     const session = new Session({
-        creator: req.user.id,
-        songTitle,
-        songwriters,
-        joinLink,
-        linkExpiresAt
+        creator: req.user._id,
+        songTitle: songTitle,
+        songwriters: [],
+        joinLink: uuidv4(),
+        linkExpiresAt: new Date(),
     });
     await session.save();
     res.status(201).json({ message: 'Session created', session });
 }));
+
+userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
+    const sessionId = req.params.id;
+    const session = await Session.findById(sessionId);
+
+    const userId = req.user._id;
+    const isCreator = session.creator._id.toString() === userId;
+    const isParticipant = session.invitations.map(p=> p._id.toString()).includes(userId);
+
+    if(!isCreator && !isParticipant){
+        return res.status(403).json({message: 'Forbidden'});
+    }
+    res.json(session);
+}) )
+
+userRouter.get('/sessions', isAuth, expressAsyncHandler(async(req,res) => {
+    const userId = req.user._id;
+
+    // Sessions the user created
+    const created = await Session.find({ creator: userId });
+
+    // Sessions the user joined (accepted invitation) but did NOT create
+    const joined = await Session.find({
+      creator: { $ne: userId },
+      invitations: {
+        $elemMatch: { invitee: userId, status: 'accepted' }
+      }
+    });
+
+    res.json({ created, joined });
+
+}))
 
 //TODO: Update invations so users know the sessions they were invited to\i
 

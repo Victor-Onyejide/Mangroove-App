@@ -4,13 +4,7 @@ const Schema = mongoose.Schema;
 const sessionSchema = new Schema({
     creator: {type: Schema.Types.ObjectId, ref:'User', required: true},
     songTitle:{type:String, required:true},
-    songwriters:[{
-        name:{type:String, required:true},
-        affiliation:{type:String},
-        publisher: {type:String},
-        role: {type:String},
-        ownership:{type:Number, min:0, max:100}
-    }],
+    songwriters:[{ type: Schema.Types.ObjectId, ref: 'User' }],
     joinLink: {type:String, unique:true},
     linkExpiresAt: {type:Date},
     createdAt: {type:Date, default:Date.now},

@@ -4,18 +4,36 @@ import user from './database.json';
 import { useParams } from 'react-router-dom';
 import { ReactComponent as ShareSVG } from '../assets/svg/share.svg';
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const QrCode = () => {
-    const [session, setSession] = useState({ id: 0, song_title: '', songwriters: [] });
+    const [session, setSession] = useState({ id: 0, songTitle: '', songwriters: [] });
     const [sessionLink, setSessionLink] = useState('');
     const navigate = useNavigate();
     const { id } = useParams();
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
     useEffect(() => {
-        const fetchSession = () => {
-            const session = user.sessions.find(session => session.id.toString() === id);
-            setSession(session);
-            setSessionLink(`${window.location.origin}/session/${id}`);
+        const fetchSession = async (req, res) => {
+            try {
+                const {data} = await axios.get(`/api/user/session/${id}`,
+                    {
+                        headers: {
+                          Authorization: `Bearer ${userInfo.token}`
+                        }
+                       }
+                );
+                console.log(data)
+                setSession(data);
+
+                //TODO: Store it in redux
+                setSessionLink(`${window.location.origin}/session/${id}`);
+
+            }
+            catch(err){
+                console.log("Error Log", err)
+            }
+
         };
         if (id) fetchSession();
     }, [id]);
@@ -45,8 +63,7 @@ const QrCode = () => {
                 <div>
                     <h1>Start a New Session</h1>
                     <div className='mt-5'>
-                        <label>Song Name:</label>
-                        <input />
+                        <h2>Song Name: <strong> {session.songTitle}</strong></h2>
                     </div>
                     <div className="qrcode__image mt-5">
                         <QRCode value={sessionLink} size={300} />
@@ -62,7 +79,7 @@ const QrCode = () => {
                         />
                     </p>
                     <button
-                        className="continue-btn mt-3"
+                        className="action-btn mt-3"
                         onClick={() => navigate(`/session/${id}`)}
                     >
                         Continue
