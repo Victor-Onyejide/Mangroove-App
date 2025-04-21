@@ -17,28 +17,25 @@ export default function LoginPage()
     const dispatch = useDispatch();
 
     const handleLogin = async() => {
+        if(!email || !password)
+        {
+            toast.error("Please Enter Password or Email");
+        }
         try{
             const {data} = await axios.post('/api/user/login', {email,password});
             localStorage.setItem('userInfo', JSON.stringify(data));
-            navigate('/sessions')
-            toast.success('Welcome!')
-
-
+            //TODO add it to redux
+            navigate('/sessions');
+            toast.success('Welcome!');
         }
         catch(err){
             console.log('Error', err)
-            toast.error(err);
-
+            toast.error("Invalid Login");
         }
         if(shareLink)
         {
             navigate(`/session/${sessionId}`);
         }
-        //TODO: add dispatch signin 
-        // const submitHandler = (e) => {
-        //     e.preventDefault();
-        //     dispatch(signin(email, password)); 
-        // };
 
     }
     return(
@@ -50,12 +47,14 @@ export default function LoginPage()
                     class="email mt-3" 
                     type="text" placeholder="Enter your email"
                     onChange={(e)=>setEmail(e.target.value)}
+                    required
                 />
 
                 <input 
                     class="password mt-3 mb-3" 
                     type="password" placeholder="Password"
                     onChange={(e)=> setPassword(e.target.value)}
+                    required
                 /> 
                 <hr/>
                 <p className="text-dark">Sign In as guest <Link to="/guest">Guest</Link></p>
