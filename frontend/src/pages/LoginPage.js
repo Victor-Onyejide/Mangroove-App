@@ -1,72 +1,88 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { use, useEffect, useState } from "react";
-import { loginAsUser } from "../features/userSlice";
-import user from './database.json';
+import { useEffect, useState } from "react";
+import { loginUser } from "../features/userSlice";
 import { toast } from 'react-toastify';
-import axios from "axios";
 
-
-export default function LoginPage()
-{
-    const { sessionId, shareLink } = useSelector((state) => state.user);
+export default function LoginPage() {
+    const { sessionId, shareLink, userInfo } = useSelector((state) => state.user);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const handleLogin = async() => {
-        if(!email || !password)
-        {
-            toast.error("Please Enter Password or Email");
-        }
-        try{
-            const {data} = await axios.post('/api/user/login', {email,password});
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            //TODO add it to redux
+    useEffect(() => {
+        //This condition is for the HomePage
+        if (userInfo){
             navigate('/sessions');
-            toast.success('Welcome!');
         }
-        catch(err){
-            console.log('Error', err)
-            toast.error("Invalid Login");
-        }
-        if(shareLink)
-        {
-            navigate(`/session/${sessionId}`);
+    }, []);
+    const handleLogin = async () => {
+        if (!email || !password) {
+            toast.error("Please enter both email and password");
+            return;
         }
 
-    }
-    return(
+        try {
+            const result = await dispatch(loginUser({ email, password }));
+
+            if (loginUser.fulfilled.match(result)) {
+                toast.success('Welcome!');
+
+                // Navigate based on shareLink or default to /sessions
+                if (shareLink) {
+
+                    //TODO: Check if the sessionId is valid(i.e if the link has expired)
+                    navigate(`/accept/${sessionId}`);
+                } else {
+                    navigate('/sessions');
+                }
+            } else {
+                toast.error(result.payload || "Invalid login credentials");
+                console.error('Login failed:', result.payload);
+            }
+        } catch (err) {
+            console.error('Unexpected error during login:', err);
+            toast.error("An unexpected error occurred");
+        }
+    };
+
+    return (
         <div className="loginPage">
-
             <h2>Log in to your account</h2>
             <div className="form mt-4">
-                <input  
-                    class="email mt-3" 
-                    type="text" placeholder="Enter your email"
-                    onChange={(e)=>setEmail(e.target.value)}
+                <input
+                    className="email mt-3"
+                    type="text"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                 />
 
-                <input 
-                    class="password mt-3 mb-3" 
-                    type="password" placeholder="Password"
-                    onChange={(e)=> setPassword(e.target.value)}
+                <input
+                    className="password mt-3 mb-3"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                /> 
-                <hr/>
-                <p className="text-dark">Sign In as guest <Link to="/guest">Guest</Link></p>
+                />
+                <hr />
+                <p className="text-dark">
+                    Sign In as guest <Link to="/guest">Guest</Link>
+                </p>
 
-                <button 
+                <button
                     className="action-btn mt-3"
-                    onClick={() => handleLogin()}
-                > 
+                    onClick={handleLogin}
+                >
                     Continue
                 </button>
             </div>
-            <p className="mt-3">Don't have an account? <Link to="/signup" className="signupText">Sign up for free &#8594;</Link></p>
+            <p className="mt-3">
+                Don't have an account? <Link to="/signup" className="signupText">Sign up for free &#8594;</Link>
+            </p>
         </div>
     );
 }

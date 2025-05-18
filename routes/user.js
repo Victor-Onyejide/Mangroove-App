@@ -17,16 +17,15 @@ userRouter.post('/login', expressAsyncHandler(async(req, res) => {
     {
         if(bcrypt.compareSync(req.body.password, user.password))
         {
-            res.send({
+            res.json({
                 _id:user._id,
-                username: user.name,
+                username: user.username,
                 email: user.email,
                 isAdmin: user.isAdmin,
                 token: generateToken(user)
             });
             return;
         }
-        res.status(200).send({message:'Welcome!'})
     }
     res.status(401).send({message:'Invalid email or password'});
 }));
@@ -46,6 +45,7 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
 
     res.send({
         _id: createdUsers._id,
+        username: createdUsers.username,
         name: createdUsers.name,
         email: createdUsers.email,
         isAdmin: createdUsers.isAdmin,
@@ -57,19 +57,18 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 
     const {
         songTitle,
-        userId
     } = req.body;
     
 
     const session = new Session({
         creator: req.user._id,
         songTitle: songTitle,
-        songwriters: [],
+        songwriters: [req.user._id],
         joinLink: uuidv4(),
         linkExpiresAt: new Date(),
     });
     await session.save();
-    res.status(201).json({ message: 'Session created', session });
+    res.status(201).json({ message: 'Session created', session: session });
 }));
 
 userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
@@ -79,10 +78,6 @@ userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
     const userId = req.user._id;
     const isCreator = session.creator._id.toString() === userId;
     const isParticipant = session.invitations.map(p=> p._id.toString()).includes(userId);
-
-    if(!isCreator && !isParticipant){
-        return res.status(403).json({message: 'Forbidden'});
-    }
     res.json(session);
 }) )
 
@@ -102,8 +97,60 @@ userRouter.get('/sessions', isAuth, expressAsyncHandler(async(req,res) => {
 
     res.json({ created, joined });
 
-}))
+}));
 
-//TODO: Update invations so users know the sessions they were invited to\i
+userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res) => {
+    const { id: sessionId } = req.params;
+    const userId = req.user._id;
+
+    // Fetch the session
+    const session = await Session.findById(sessionId);
+    if (!session) {
+        console.log("Session not found for ID:", sessionId);
+        return res.status(404).json({ message: "Not Found" });
+    }
+    // Mark invitation as accepted
+    const invite = session.invitations.find(i => i.invitee.toString() === userId);
+    if (invite) {
+        invite.status = 'accepted';
+        console.log("Invitation found and marked as accepted:", invite);
+    } else {
+        console.log("No invitation found for user:", userId);
+    }
+
+    // Add user to songwriters if not already present
+    if (!session.songwriters.includes(userId)) {
+        session.songwriters.push(userId);
+        console.log("User added to songwriters:", userId);
+    } else {
+        console.log("User already in songwriters:", userId);
+    }
+
+    // Find or add the invitation
+    const existingInvite = session.invitations.find(invite =>
+        invite.invitee.toString() === userId
+    );
+    if (existingInvite) {
+        existingInvite.status = 'accepted';
+        console.log("Existing invitation updated:", existingInvite);
+    } else {
+        const newInvite = {
+            invitee: userId,
+            status: 'accepted',
+            invitedAt: Date.now(),
+        };
+        session.invitations.push(newInvite);
+        console.log("New invitation added:", newInvite);
+    }
+
+    // Save the session
+    await session.save();
+    // Fetch user info for avatar
+    const user = await User.findById(userId).select('username');
+ 
+
+    // Respond with the updated session
+    res.json(session);
+}));
 
 export default userRouter;

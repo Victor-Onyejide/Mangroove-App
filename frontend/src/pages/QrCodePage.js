@@ -39,23 +39,25 @@ const QrCode = () => {
     }, [id]);
 
     const handleShare = () => {
+        // Always copy link to clipboard
+        navigator.clipboard.writeText(sessionLink)
+          .then(() => console.log('Link copied to clipboard!'))
+          .catch((err) => console.error('Failed to copy text:', err));
+      
+        // Use native share if available
         if (navigator.share) {
-            // Web Share API
-            navigator.share({
-                title: 'Join this session!',
-                text: `Check out this session: ${session.song_title}`,
-                url: sessionLink,
-            })
-                .then(() => console.log('Shared successfully!'))
-                .catch((error) => console.error('Error sharing:', error));
+          navigator.share({
+            title: 'Join this session!',
+            text: `Check out this session: ${session.song_title}`,
+            url: sessionLink,
+          })
+            .then(() => console.log('Shared successfully!'))
+            .catch((error) => console.error('Error sharing:', error));
         } else {
-            // Fallback for unsupported browsers
-            alert('Web Share API is not supported. The link has been copied to your clipboard!');
-            navigator.clipboard.writeText(sessionLink).catch((err) =>
-                console.error('Failed to copy text to clipboard:', err)
-            );
+          alert('The link has been copied to your clipboard!');
         }
-    };
+      };
+      
 
     return (
         <div className="qrcode-container">
@@ -80,7 +82,7 @@ const QrCode = () => {
                     </p>
                     <button
                         className="action-btn mt-3"
-                        onClick={() => navigate(`/session/${id}`)}
+                        onClick={() => navigate(`/joined/${id}`)}
                     >
                         Continue
                     </button>

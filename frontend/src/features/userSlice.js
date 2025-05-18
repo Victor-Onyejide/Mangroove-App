@@ -1,47 +1,73 @@
-import { createSlice }  from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 
+const userFromStorage = localStorage.getItem('userInfo')
 const initialState = {
-    isLoggedIn:false,
+    isLoggedIn: false,
     userType: '',
     sessionId: null,
-    user: null,
-    shareLink: false
+    userInfo: userFromStorage ? JSON.parse(userFromStorage) : null,
+    shareLink: false,
+    loading: false,
+    error: null,
 };
 
+// Async thunk for login
+export const loginUser = createAsyncThunk(
+    'user/loginUser',
+    async ({ email, password }, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post('/api/user/login', { email, password });
+            localStorage.setItem('userInfo', JSON.stringify(data));
+            return data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message
+            );
+        }
+    }
+);
+
 const userSlice = createSlice({
-    name:'user',
+    name: 'user',
     initialState,
     reducers: {
-        setShareLink: (state, action) => {
-            state.shareLink = action.payload;
-        },
         setSessionId: (state, action) => {
             state.sessionId = action.payload;
         },
-
-        loginAsGuest: (state, action) => {
-            state.isLoggedIn = true;
-            state.useratype = 'guest';
+        setShareLink: (state, action) => {
+            state.shareLink = action.payload;
         },
-        loginAsUser: (state,action) => {
-            state.isLoggedIn = true;
-            state.userType = 'user';
-            state.user = action.payload
-        },
-        logout:(state) => {
+        logout: (state) => {
             state.isLoggedIn = false;
             state.userType = '';
-            state.sessionId = null
+            state.sessionId = null;
             state.shareLink = false;
-        }
-    }
+            state.userInfo = null;
+            localStorage.removeItem('userInfo');
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(loginUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(loginUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.isLoggedIn = true;
+                state.userType = 'user';
+                state.userInfo = action.payload;
+            })
+            .addCase(loginUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+    },
 });
 
-export const {loginAsGuest, 
-              loginAsUser, 
-              logout, 
-              setSessionId,
-              setShareLink
-            } = userSlice.actions;
+export const { setSessionId, setShareLink, logout } = userSlice.actions;
 
 export default userSlice.reducer;

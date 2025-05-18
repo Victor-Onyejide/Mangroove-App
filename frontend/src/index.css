@@ -98,7 +98,7 @@ button{
   justify-content: space-between;
   background-color: white;
   border-radius: 20px;
-  padding: 30px 45px 30px 45px;
+  padding: 30px 30px 30px 30px;
 }
 
 .loginPage .form input,
@@ -194,15 +194,11 @@ button{
     justify-content: space-between;
     width: 65%;
   }
-  .signupPage form{
-    padding: 20px 10px 20px 10px;
-
-  }
   .signupPage .content h2{
     margin-top: 50px;
   }
   .signupPage .content{
-    margin-bottom: 100px;
+    margin-top: 200px;
   }
 
   

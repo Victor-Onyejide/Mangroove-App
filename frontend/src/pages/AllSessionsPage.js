@@ -16,7 +16,6 @@ export default function AllSessionsPage() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const navigate = useNavigate();
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-  const [createdSession, setCreatedSession] = useState();
   const [mySessions, setMySessions] = useState();
   const [joinedSessions, setMyJoinedSessions] = useState();
   // Custom styles for the modal to center it on the screen
@@ -50,18 +49,20 @@ export default function AllSessionsPage() {
   const createSession = async () => {
     try {
       const { data } = await axios.post("/api/user/create-session", { 
-        songTitle,
-       },
-       {
-        headers: {
-          Authorization: `Bearer ${userInfo.token}`
+          songTitle,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`
+          }
         }
-       }
-      );
-      setCreatedSession(data)
+        );
+
       closeModal();
+
       toast.success("Let's goo!!!");
-      console.log("Created Session", createdSession);
+      navigate(`/qrcode/${data.session._id}`);
+
     } catch (error) {
       toast.error("Something Went wrong");
       console.log(error);
@@ -87,13 +88,7 @@ export default function AllSessionsPage() {
     }
     getAllSessions();
 
-  })
-
-  if(createdSession)
-    {
-      navigate(`/qrcode/${createdSession.session._id}`);
-
-    }
+  },[])
 
   return (
     <div className="allSessionsPage container">

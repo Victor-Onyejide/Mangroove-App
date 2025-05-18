@@ -23,9 +23,9 @@ export default function SignUpPage(){
             affiliation,
             publisher
         });
+        localStorage.setItem('userInfo', JSON.stringify(data));
         navigate('/sessions');
         toast.success('Welcome!');
-        console.log(data)
     } catch(err){
         console.log("Err", err);
         toast.error(err)
