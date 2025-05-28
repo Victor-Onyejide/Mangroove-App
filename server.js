@@ -5,8 +5,7 @@ import http from 'http';
 import mongoose from "mongoose";
 import userRouter from './routes/user.js';
 import cors from 'cors';
-// import { Server as IOServer } from 'socket.io';
-
+import cookieParser from "cookie-parser";
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +14,8 @@ app.use(cors({
   methods: ['GET', 'POST','OPTIONS'],
   credentials: true
 }));
+
+app.use(cookieParser()); // Middleware to parse cookies
 
 const PORT = 4000;
 

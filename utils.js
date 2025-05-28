@@ -14,25 +14,21 @@ export const generateToken = (user) => {
 };
 
 export const isAuth = (req, res, next) => {
-    const authorization = req.headers.authorization;
+    const token = req.cookies.token; // Extract token from cookies
 
-    if(authorization){
-        const token = authorization.slice(7, authorization.length);
-
-        jwt.verify(token, process.env.JWT_SECRET, (err, decode) =>{
-            if(err) {
-                res.status(401).send({message:'Invalid Token'})
-            }
-            else {
-                req.user = decode;
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
+            if (err) {
+                res.status(401).send({ message: 'Invalid Token' });
+            } else {
+                req.user = decode; // Attach decoded user data to the request
                 next();
             }
-        })
+        });
+    } else {
+        res.status(401).send({ message: 'No Token' });
     }
-    else {
-        res.status(401).send({message:'No Token'});
-    }
-}
+};
 
 export const isAdmin = (req, res, next) => {
     if(req.user && req.user.isAdmin){

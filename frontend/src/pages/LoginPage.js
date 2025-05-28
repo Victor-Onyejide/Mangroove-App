@@ -16,7 +16,8 @@ export default function LoginPage() {
         if (userInfo){
             navigate('/sessions');
         }
-    }, []);
+    }, [userInfo, navigate]);
+
     const handleLogin = async () => {
         if (!email || !password) {
             toast.error("Please enter both email and password");
@@ -68,10 +69,6 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <hr />
-                <p className="text-dark">
-                    Sign In as guest <Link to="/guest">Guest</Link>
-                </p>
 
                 <button
                     className="action-btn mt-3"

@@ -7,7 +7,7 @@ export const fetchSession = createAsyncThunk(
         const token = getState().user.userInfo?.token; // Extract token from userInfo
         try {
             const { data } = await axios.get(`/api/user/session/${sessionId}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true,
             });
             return data;
         } catch (err) {
@@ -25,7 +25,7 @@ export const joinSession = createAsyncThunk(
                 `/api/user/session/${sessionId}/join`,
                 {},
                 {
-                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true,
                 }
             );
             return data;

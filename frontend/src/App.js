@@ -15,6 +15,8 @@ import { logout } from './features/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import AcceptPage from './pages/AcceptPage';
+import './axiosConfig.js';
+import { getCurrentUser, logoutUser } from './features/userSlice';
 
 function App() {
   const navigate = useNavigate();
@@ -27,16 +29,32 @@ function App() {
     }
   const userInfo = useSelector((state) => state.user.userInfo);
 
-  const handleLogout = () =>{
-    dispatch(logout());
-    toast.info("You have been logged out.");
+  const handleLogout = async () =>{
+    try{
+      // Dispatch the logout thunk
+      await dispatch(logoutUser()).unwrap();
+      // Show a success message
+      toast.success("You have been logged out.");
+    } catch(error){
+      toast.error("Failed to log out. Please try again.");
+    }
   }
 
-  useEffect(() => {
-    if (!userInfo) {
-      navigate("/login");
-  }
-  }, [userInfo,navigate]);
+useEffect(() => {
+    const fetchUser = async () => {
+        try {
+            await dispatch(getCurrentUser()).unwrap();
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+            navigate("/login"); // Redirect to login if fetching user info fails
+        }
+    };
+
+    // Only fetch the user if userInfo is null and the current path is not /signup
+    if (!userInfo && window.location.pathname !== '/signup') {
+        fetchUser();
+    }
+}, [dispatch, userInfo, navigate]);
 
   return (
     <div>

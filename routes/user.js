@@ -17,12 +17,21 @@ userRouter.post('/login', expressAsyncHandler(async(req, res) => {
     {
         if(bcrypt.compareSync(req.body.password, user.password))
         {
+            const token = generateToken(user);
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Set to true in production
+                sameSite: 'strict', // Adjust as needed
+                maxAge: 24 * 60 * 60 * 1000, // 1 day
+            });
+
             res.json({
                 _id:user._id,
                 username: user.username,
                 email: user.email,
                 isAdmin: user.isAdmin,
-                token: generateToken(user)
+                token: token
             });
             return;
         }
@@ -43,6 +52,19 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
 
     const createdUsers = await user.save();
 
+    const token = generateToken(createdUsers);
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Set to true in production
+        sameSite: 'strict', // Adjust as needed
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    if(!createdUsers)
+    {
+        return res.status(400).send({message: 'Invalid user data'});
+    }
+
     res.send({
         _id: createdUsers._id,
         username: createdUsers.username,
@@ -52,6 +74,21 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
         token: generateToken(createdUsers),
     })
 }));
+
+userRouter.get('/profile', isAuth, expressAsyncHandler(async(req, res) => {
+    res.json({
+        _id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        isAdmin: req.user.isAdmin
+    });
+}));
+
+// Logout route
+userRouter.post('/logout', (req, res) => {
+    res.clearCookie('token'); // Clear the token cookie
+    res.status(200).json({ message: 'Logged out successfully' });
+});
 
 userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) => {
 

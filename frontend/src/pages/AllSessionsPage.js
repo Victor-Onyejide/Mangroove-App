@@ -72,11 +72,7 @@ export default function AllSessionsPage() {
     const getAllSessions = async (req,res) => {
       try{
         const {data} = await axios.get('/api/user/sessions',
-          {
-            headers: {
-              Authorization: `Bearer ${userInfo.token}`
-            }
-          });
+   { withCredentials: true });
         console.log("Data", data);
         setMySessions(data.created);
       }
