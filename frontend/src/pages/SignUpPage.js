@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { signUpUser } from "../features/userSlice";
 import { use, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -12,26 +14,23 @@ export default function SignUpPage(){
   const [role, setRole] = useState();
 
   const navigate = useNavigate();
-
-  const handleSignUp = async() => {
+  const dispatch = useDispatch(); 
+  const handleSignUp = async () => {
     try {
-        const {data} = await axios.post('/api/user/signup',{
-            username,
-            email, 
-            role, 
-            password,
-            affiliation,
-            publisher
-        });
-        localStorage.setItem('userInfo', JSON.stringify(data));
-        navigate('/sessions');
-        toast.success('Welcome!');
-    } catch(err){
-        console.log("Err", err);
-        toast.error(err)
-    }
+        // Dispatch the signUpUser thunk
+        const result = await dispatch(
+            signUpUser({ username, email, role, password, affiliation, publisher })
+        ).unwrap();
 
-  }
+        // Show success message and navigate to sessions
+        toast.success('Welcome!');
+        navigate('/sessions');
+    } catch (err) {
+        // Handle errors
+        console.error("Signup error:", err);
+        toast.error("Signup failed. Please try again.");
+    }
+    };
 
     return(
         <div className="signupPage">
