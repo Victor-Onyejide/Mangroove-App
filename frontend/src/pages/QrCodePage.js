@@ -18,16 +18,14 @@ const QrCode = () => {
             try {
                 const {data} = await axios.get(`/api/user/session/${id}`,
                     {
-                        headers: {
-                          Authorization: `Bearer ${userInfo.token}`
-                        }
-                       }
+                        withCredentials: true,
+                    }
                 );
                 console.log(data)
                 setSession(data);
 
                 //TODO: Store it in redux
-                setSessionLink(`${window.location.origin}/session/${id}`);
+                setSessionLink(`${window.location.origin}/joined/${id}`);
 
             }
             catch(err){

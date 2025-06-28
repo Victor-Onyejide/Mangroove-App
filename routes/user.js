@@ -5,6 +5,7 @@ import User from '../models/userModel.js';
 import Session from '../models/sessionModel.js';
 import {generateToken, isAuth, isAdmin} from '../utils.js';
 import { v4 as uuidv4 } from 'uuid';
+import {sendSessionUpdate} from '../sse.js';
 
 const userRouter = express.Router();
 
@@ -18,11 +19,12 @@ userRouter.post('/login', expressAsyncHandler(async(req, res) => {
         if(bcrypt.compareSync(req.body.password, user.password))
         {
             const token = generateToken(user);
+            const isProduction = process.env.NODE_ENV === 'production';
 
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // Set to true in production
-                sameSite: 'strict', // Adjust as needed
+                secure: isProduction, // Set to true in production
+                sameSite: isProduction ? 'strict' : 'lax', // Adjust as needed should be none in production
                 maxAge: 24 * 60 * 60 * 1000, // 1 day
             });
 
@@ -43,6 +45,7 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
     const user = new User ({
         username: req.body.username,
         email: req.body.email,
+        stageName: req.body.aka,
         password: bcrypt.hashSync(req.body.password, 8),
         affiliation: req.body.affiliation,
         publisher: req.body.publisher,
@@ -53,13 +56,14 @@ userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
     const createdUsers = await user.save();
 
     const token = generateToken(createdUsers);
-    res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Set to true in production
-        sameSite: 'strict', // Adjust as needed
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
+    const isProduction = process.env.NODE_ENV === 'production';
 
+    res.cookie('token', token, {
+            httpOnly: true,
+            secure: isProduction, // Set to true in production
+            sameSite: isProduction ? 'strict' : 'lax', // Adjust as needed should be none in production
+            maxAge: 24 * 60 * 60 * 1000, // 1 day
+        });
     if(!createdUsers)
     {
         return res.status(400).send({message: 'Invalid user data'});
@@ -90,12 +94,13 @@ userRouter.post('/logout', (req, res) => {
     res.status(200).json({ message: 'Logged out successfully' });
 });
 
+// Session routes
+// Create a new session
 userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) => {
 
     const {
         songTitle,
     } = req.body;
-    
 
     const session = new Session({
         creator: req.user._id,
@@ -108,16 +113,18 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
     res.status(201).json({ message: 'Session created', session: session });
 }));
 
+// Get session by ID
 userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
     const sessionId = req.params.id;
-    const session = await Session.findById(sessionId);
-
+    const session = await Session.findById(sessionId).populate({path:'songwriters', select:'_id  username affiliation publisher role ownership'})
+    console.log("Session fetched Backend:", session);
     const userId = req.user._id;
     const isCreator = session.creator._id.toString() === userId;
     const isParticipant = session.invitations.map(p=> p._id.toString()).includes(userId);
     res.json(session);
 }) )
 
+// Get all sessions for the user
 userRouter.get('/sessions', isAuth, expressAsyncHandler(async(req,res) => {
     const userId = req.user._id;
 
@@ -136,6 +143,7 @@ userRouter.get('/sessions', isAuth, expressAsyncHandler(async(req,res) => {
 
 }));
 
+// Invite a user to a session
 userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res) => {
     const { id: sessionId } = req.params;
     const userId = req.user._id;
@@ -182,12 +190,31 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
 
     // Save the session
     await session.save();
+    sendSessionUpdate(sessionId, session);
     // Fetch user info for avatar
     const user = await User.findById(userId).select('username');
  
 
     // Respond with the updated session
     res.json(session);
+}));
+
+userRouter.post('/session/:id/end', isAuth, expressAsyncHandler(async (req, res) => {
+    const sessionId = req.params.id;
+    const userId = req.user._id;
+    const session = await Session.findById(sessionId);
+
+    if (!session) {
+        return res.status(404).json({ message: 'Session not found' });
+    }
+    if (session.creator.toString() !== userId.toString()) {
+        return res.status(403).json({ message: 'Only the session creator can end the session' });
+    }
+    session.isEnded = true;
+    await session.save();
+    sendSessionUpdate(sessionId, {ended:true});
+    res.json({ message: 'Session ended successfully', session });
+
 }));
 
 export default userRouter;

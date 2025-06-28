@@ -8,6 +8,7 @@ const sessionSchema = new Schema({
     joinLink: {type:String, unique:true},
     linkExpiresAt: {type:Date},
     createdAt: {type:Date, default:Date.now},
+    isEnded: {type:Boolean, default:false},
     invitations:[{
         invitee: {type:Schema.Types.ObjectId, ref:'User', required:true},
         status: {type:String, enum: ['pending', 'accepted', 'declined'], default:'pending'},

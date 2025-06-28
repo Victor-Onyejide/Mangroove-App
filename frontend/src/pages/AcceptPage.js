@@ -11,18 +11,21 @@ export default function AcceptPage() {
     const navigate = useNavigate();
     const userInfo = useSelector((state) => state.user.userInfo); // Get user info from Redux store
 
-
     const handleAccept = async () => {
         try {
             const result = await dispatch(joinSession(sessionId)).unwrap(); // Call joinSession route
             toast.success("You have successfully joined the session!");
+
+            // Send the new user's information to the backend
             await axios.post(`http://localhost:4000/updateSession/${sessionId}`, {
-                message: 'User joined the session',
-            },{
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                newUser: {
+                    _id: userInfo._id,       // User ID
+                    username: userInfo.username // Username
+                }
+            }, {
+                withCredentials: true // Include credentials for CORS
             });
+
             navigate(`/joined/${sessionId}`); // Redirect to JoinedSession page
         } catch (error) {
             toast.error("Failed to join the session. Please try again.");

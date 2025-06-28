@@ -32,7 +32,6 @@ export default function LoginPage() {
 
                 // Navigate based on shareLink or default to /sessions
                 if (shareLink) {
-
                     //TODO: Check if the sessionId is valid(i.e if the link has expired)
                     navigate(`/accept/${sessionId}`);
                 } else {

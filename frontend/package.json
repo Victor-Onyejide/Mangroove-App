@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "proxy": "http://localhost:4000",
   "private": true,
+  "overrides": {
+    "react-refresh": "0.11.0"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
     "@testing-library/dom": "^10.4.0",
@@ -12,6 +15,8 @@
     "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
     "html-to-image": "^1.11.13",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-modal": "^3.16.3",

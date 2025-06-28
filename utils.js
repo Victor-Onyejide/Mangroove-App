@@ -14,20 +14,23 @@ export const generateToken = (user) => {
 };
 
 export const isAuth = (req, res, next) => {
-    const token = req.cookies.token; // Extract token from cookies
+  const token = req.cookies.token;
 
-    if (token) {
-        jwt.verify(token, process.env.JWT_SECRET, (err, decode) => {
-            if (err) {
-                res.status(401).send({ message: 'Invalid Token' });
-            } else {
-                req.user = decode; // Attach decoded user data to the request
-                next();
-            }
-        });
-    } else {
-        res.status(401).send({ message: 'No Token' });
+  if (!token) {
+    console.log("No token found");
+    return res.status(401).send({ message: 'No Token' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err || !decoded) {
+      console.log("Invalid or missing decoded payload:", err?.message || 'None');
+      return res.status(401).send({ message: 'Invalid Token' });
     }
+
+    // ✅ Now it's safe to use `decoded`
+    req.user = decoded;
+    next();
+  });
 };
 
 export const isAdmin = (req, res, next) => {
