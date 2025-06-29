@@ -52,9 +52,7 @@ export default function AllSessionsPage() {
           songTitle,
         },
         {
-          headers: {
-            Authorization: `Bearer ${userInfo.token}`
-          }
+          withCredentials: true,
         }
         );
 
@@ -121,7 +119,7 @@ export default function AllSessionsPage() {
         
         {mySessions ? mySessions.map((session) => (
           <div key={session.id} className="item">
-            <Link to={`/session/${session.id}`} className="session-title">
+            <Link to={`/session/${session._id}`} className="session-title">
               <div className="file-icon-container">
                 <FileSVG width={50} height={50} />
               </div>

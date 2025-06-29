@@ -12,6 +12,7 @@ export default function SignUpPage(){
   const [affiliation, setAffliliation] = useState();
   const [publisher, setPublisher] = useState();
   const [role, setRole] = useState();
+  const [aka, setAka]  = useState();
 
   const navigate = useNavigate();
   const dispatch = useDispatch(); 
@@ -19,7 +20,7 @@ export default function SignUpPage(){
     try {
         // Dispatch the signUpUser thunk
         const result = await dispatch(
-            signUpUser({ username, email, role, password, affiliation, publisher })
+            signUpUser({ username, email, aka, role, password, affiliation, publisher })
         ).unwrap();
 
         // Show success message and navigate to sessions
@@ -48,6 +49,13 @@ export default function SignUpPage(){
                         class="mt-3" 
                         type="text" placeholder="Enter your email"
                         onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+
+                    <input 
+                        class="mt-3" 
+                        type="text" placeholder="Enter your Stage Name"
+                        onChange={(e) => setAka(e.target.value)}
                         required
                     />
 

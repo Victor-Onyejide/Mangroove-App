@@ -13,14 +13,18 @@ import Avatar from './components/Avatar';
 import './assets/css/navbar.css';
 import { logout } from './features/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import AcceptPage from './pages/AcceptPage';
 import './axiosConfig.js';
 import { getCurrentUser, logoutUser } from './features/userSlice';
+import "jspdf-autotable";
+
 
 function App() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { isLoggedIn } = useSelector((state) => state.user);
+
   const toggle = () => 
     {
       const toggleButton = document.getElementsByClassName('menu')[0]
@@ -39,9 +43,7 @@ function App() {
       toast.error("Failed to log out. Please try again.");
     }
   }
-
-useEffect(() => {
-    const fetchUser = async () => {
+  const fetchUser = async () => {
         try {
             await dispatch(getCurrentUser()).unwrap();
         } catch (error) {
@@ -50,11 +52,33 @@ useEffect(() => {
         }
     };
 
-    // Only fetch the user if userInfo is null and the current path is not /signup
-    if (!userInfo && window.location.pathname !== '/signup') {
-        fetchUser();
+useEffect(() => {
+    const controller = new AbortController();
+    // Only fetch the user if userInfo is null and not on public routes
+
+    console.log("useEffect triggered");
+    console.log("userInfo:", userInfo);
+    const fetchUser = async () => {
+      try {
+          await dispatch(getCurrentUser()).unwrap();
+      } catch (error) {
+          console.error('Error fetching user info:', error);
+          navigate("/login"); // Redirect to login if fetching user info fails
+        }
+      }
+    if (
+      !userInfo &&
+      window.location.pathname !== '/signup' &&
+      window.location.pathname !== '/login'
+      && !isLoggedIn
+    ) {
+      console.log("Fetching user info...");
+      console.log("Current path:", window.location.pathname);
+
+      fetchUser();
     }
-}, [dispatch, userInfo, navigate]);
+
+}, []);
 
   return (
     <div>
