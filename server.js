@@ -8,7 +8,8 @@ import cors from 'cors';
 import cookieParser from "cookie-parser";
 import {sessionClients, sendSessionUpdate} from './sse.js';
 import path from 'path';
-
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const app = express();
 const server = http.createServer(app);
@@ -79,11 +80,14 @@ mongoose.connect(process.env.MONGODB_URL)
 app.use('/api/user', userRouter);
 
 //Live SetUp
-const __dir = path.resolve();
-app.use(express.static(path.join(__dir, '/frontend/build')));
-app.get('*', (req,res) => {
-    res.sendFile(path.join(__dir, '/frontend/build/index.html'))
-})
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Now use __dirname as expected
+app.use(express.static(path.join(__dirname, '/frontend/build')));
+app.get('/{*any}', (req, res) => {
+  res.sendFile(path.join(__dirname, '/frontend/build/index.html'));
+});
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
