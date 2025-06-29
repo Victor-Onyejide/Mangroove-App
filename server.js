@@ -21,7 +21,7 @@ app.use(cors({
 
 app.use(cookieParser()); // Middleware to parse cookies
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT;
 
 dotenv.config();
 app.use(express.json());
