@@ -17,7 +17,7 @@ export default function AcceptPage() {
             toast.success("You have successfully joined the session!");
 
             // Send the new user's information to the backend
-            await axios.post(`http://localhost:4000/updateSession/${sessionId}`, {
+            await axios.post(`/updateSession/${sessionId}`, {
                 newUser: {
                     _id: userInfo._id,       // User ID
                     username: userInfo.username // Username
