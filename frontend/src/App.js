@@ -37,7 +37,7 @@ function App() {
     try{
       // Dispatch the logout thunk
       await dispatch(logoutUser()).unwrap();
-      // Show a success message
+      navigate("/login");
       toast.success("You have been logged out.");
     } catch(error){
       toast.error("Failed to log out. Please try again.");

@@ -25,6 +25,7 @@ export default function JoinedSession() {
         await axios.post(`/api/user/session/${sessionId}/end`, {
             withCredentials: true,
         });
+        navigate(`/session/${sessionId}`);
         toast.success("Session ended for all users.");
     } catch (err) {
         toast.error("Failed to end session.");
