@@ -191,14 +191,14 @@ button{
   .signupPage {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    width: 65%;
+    padding-left: 20px;
+    padding-right: 20px;
   }
   .signupPage .content h2{
-    margin-top: 150px;
+    margin-top: 50px;
   }
   .signupPage .content{
-    margin-top: 200px;
+    margin-top: 320px;
   }
 
   
