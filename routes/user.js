@@ -13,6 +13,8 @@ userRouter.get('/', expressAsyncHandler(async(req, res) => {
     res.send({message: 'Message'});
 }));
 userRouter.post('/login', expressAsyncHandler(async(req, res) => {
+    console.log("Login request received:", req.body);
+
     const user = await User.findOne({email: req.body.email});
     if(user)
     {
@@ -42,6 +44,7 @@ userRouter.post('/login', expressAsyncHandler(async(req, res) => {
 }));
 
 userRouter.post('/signup', expressAsyncHandler(async(req,res) => {
+    console.log("Signup request received:", req.body);
     const user = new User ({
         username: req.body.username,
         email: req.body.email,

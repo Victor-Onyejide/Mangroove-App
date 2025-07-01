@@ -21,7 +21,7 @@ const server = http.createServer(app);
 // }));
 
 app.use(cors({
-  origin: true,
+  origin: true, // Allow requests from your frontend
   credentials: true
 }));
 
@@ -90,7 +90,7 @@ const __dirname = dirname(__filename);
 
 // Now use __dirname as expected
 app.use(express.static(path.join(__dirname, '/frontend/build')));
-app.get('*', (req, res) => {
+app.get('/{*any}', (req, res) => {
   res.sendFile(path.join(__dirname, '/frontend/build/index.html'));
 });
 
