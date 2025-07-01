@@ -13,11 +13,12 @@ const initialState = {
 
 export const signUpUser = createAsyncThunk(
     'user/signUpUser',
-        async ({ username, email, role, password, affiliation, publisher }, { rejectWithValue }) => {
+        async ({ username, email, aka,role, password, affiliation, publisher }, { rejectWithValue }) => {
         try {
             const { data } = await axios.post('/api/user/signup', {
                 username,
                 email,
+                aka,
                 role,
                 password,
                 affiliation,
