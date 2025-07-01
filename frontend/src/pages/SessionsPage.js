@@ -113,7 +113,6 @@ export default function SessionsPage() {
                   <span>
                     ({writer.stageName || 'N/A'})
                   </span>
-
                 </td>
                 <td>{writer.affiliation}</td>
                 <td>{writer.publisher}</td>

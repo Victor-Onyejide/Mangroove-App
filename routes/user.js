@@ -119,7 +119,7 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 // Get session by ID
 userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
     const sessionId = req.params.id;
-    const session = await Session.findById(sessionId).populate({path:'songwriters', select:'_id  username affiliation publisher role ownership'})
+    const session = await Session.findById(sessionId).populate({path:'songwriters', select:'_id  username stageName affiliation publisher role ownership'})
     console.log("Session fetched Backend:", session);
     const userId = req.user._id;
     const isCreator = session.creator._id.toString() === userId;
