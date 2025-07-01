@@ -14,9 +14,14 @@ import { dirname } from 'path';
 const app = express();
 const server = http.createServer(app);
 
+// app.use(cors({
+//   origin: 'http://localhost:3000', // Allow requests from your frontend
+//   methods: ['GET', 'POST','OPTIONS'],
+//   credentials: true
+// }));
+
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from your frontend
-  methods: ['GET', 'POST','OPTIONS'],
+  origin: true,
   credentials: true
 }));
 
