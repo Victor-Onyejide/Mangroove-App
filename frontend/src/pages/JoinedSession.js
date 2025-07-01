@@ -60,7 +60,7 @@ export default function JoinedSession() {
     }, [dispatch,sessionId]);
 
     useEffect(() => {
-        const eventSource = new EventSource(`http://localhost:4000/event/${sessionId}`);
+        const eventSource = new EventSource(`/event/${sessionId}`);
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             console.log("Received SSE event:", data);
