@@ -13,7 +13,7 @@ import Avatar from './components/Avatar';
 import './assets/css/navbar.css';
 import { logout } from './features/userSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { use, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import AcceptPage from './pages/AcceptPage';
 import './axiosConfig.js';
 import { getCurrentUser, logoutUser } from './features/userSlice';
@@ -21,17 +21,19 @@ import "jspdf-autotable";
 
 
 function App() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
   const dispatch = useDispatch();
   const { isLoggedIn } = useSelector((state) => state.user);
-
-  const toggle = () => 
-    {
-      const toggleButton = document.getElementsByClassName('menu')[0]
-      const navbarLinks = document.getElementsByClassName('links')[0]
-      navbarLinks.classList.toggle('active');
-    }
   const userInfo = useSelector((state) => state.user.userInfo);
+
+  //Menu Open and Close State
+  const [menuOpen, setMenuOpen] = useState(false);
+  
+  const toggle = () => {
+    setMenuOpen((prev) => !prev); // <-- This toggles the menuOpen state
+    const navbarLinks = document.getElementsByClassName('links')[0];
+    navbarLinks.classList.toggle('active');
+  };
 
   const handleLogout = async () =>{
     try{
@@ -43,21 +45,9 @@ function App() {
       toast.error("Failed to log out. Please try again.");
     }
   }
-  const fetchUser = async () => {
-        try {
-            await dispatch(getCurrentUser()).unwrap();
-        } catch (error) {
-            console.error('Error fetching user info:', error);
-            navigate("/login"); // Redirect to login if fetching user info fails
-        }
-    };
+
 
 useEffect(() => {
-    const controller = new AbortController();
-    // Only fetch the user if userInfo is null and not on public routes
-
-    console.log("useEffect triggered");
-    console.log("userInfo:", userInfo);
     const fetchUser = async () => {
       try {
           await dispatch(getCurrentUser()).unwrap();
@@ -72,9 +62,6 @@ useEffect(() => {
       window.location.pathname !== '/login'
       && !isLoggedIn
     ) {
-      console.log("Fetching user info...");
-      console.log("Current path:", window.location.pathname);
-
       fetchUser();
     }
 
@@ -93,7 +80,7 @@ useEffect(() => {
 
             {userInfo ? <Avatar name={userInfo.username}/>: <Link to="/login">Login</Link>}
 
-            <div className="menu" onClick={toggle}>
+            <div className={`menu${menuOpen ? ' open' : ''}`}  onClick={toggle}>
               <span className="bar"></span>
               <span className="bar"></span>
               <span className="bar"></span>

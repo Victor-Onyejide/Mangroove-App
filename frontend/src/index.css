@@ -48,7 +48,6 @@ nav {
 
 }
 .links.active {
-  margin-top: 40px;
   display: flex;
 }
 nav a:hover{
@@ -66,6 +65,47 @@ nav .menu .bar {
   border-radius: 10px;
 }
 
+.menu {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  position: relative;
+}
+.menu .bar {
+  margin: 4px 0;
+  height: 4px;
+  width: 30px;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  display: block;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.menu .bar:nth-child(1) {
+  top: 10px;
+}
+.menu .bar:nth-child(2) {
+  top: 18px;
+}
+.menu .bar:nth-child(3) {
+  top: 26px;
+}
+.menu.open .bar:nth-child(1) {
+  transform: translateX(-50%) translateY(8px) rotate(45deg);
+}
+.menu.open .bar:nth-child(2) {
+  opacity: 0;
+}
+.menu.open .bar:nth-child(3) {
+  transform: translateX(-50%) translateY(-8px) rotate(-45deg);
+}
 button {
   all: unset;
   background: none;
@@ -129,28 +169,6 @@ button{
   color: #008751;
 }
 
-/* Sign Up Page */
-.signupPage {
-  height: 600px;
-  width: 1000px;
-  display: flex;
-  justify-content: space-between;
-}
-.signupPage .wrapper{
-  background-color: white;
-  border-radius: 20px;
-  height: 500px;
-}
-.signupPage .wrapper h2{
-  color: black;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-.signupPage .content{
-  height: 500px;
-  max-width: 450px;
-}
-
 /* ALL Sessions Page */
 .allSessionsPage a{
   text-decoration: none; 
@@ -188,16 +206,4 @@ button{
 }
 
 @media (max-width:950px) {
-  .signupPage {
-    display: flex;
-    flex-direction: column;
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  .signupPage .content h2{
-    margin-top: 50px;
-  }
-  .signupPage .content{
-    margin-top: 320px;
-  }
 }
