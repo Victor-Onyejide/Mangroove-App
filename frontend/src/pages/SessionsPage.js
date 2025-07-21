@@ -24,6 +24,64 @@ export default function SessionsPage() {
     return `${mm}/${dd}/${yyyy}`;
   }
 
+  function handleDownloadPDF () {
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text("Song Split Sheet", 14, 18);
+
+  doc.setFontSize(12);
+  doc.text(`Song Title: ${session.songTitle}`, 14, 28);
+
+  // Table headers
+  const headers = ["Songwriter", "IPI #", "Publisher", "Role", "Ownership"];
+  let startY = 38;
+  headers.forEach((header, i) => {
+    doc.text(header, 14 + i * 35, startY);
+    // Draw header cell borders
+    doc.rect(14 + i * 35, startY - 6, 35, 12);
+  });
+
+  // Table Rows with borders
+  session.songwriters.forEach((writer, index) => {
+    const rowY = startY + 12 + index * 16;
+    // Draw cell borders for each column
+    doc.rect(14, rowY - 6, 35, 16);   // Songwriter cell
+    doc.rect(49, rowY - 6, 35, 16);   // IPI #
+    doc.rect(84, rowY - 6, 35, 16);   // Publisher
+    doc.rect(119, rowY - 6, 35, 16);  // Role
+    doc.rect(154, rowY - 6, 35, 16);  // Ownership
+
+    // Songwriter name and stage name
+    doc.text(writer.username, 16, rowY);
+    doc.text(`(${writer.stageName || 'N/A'})`, 16, rowY + 6);
+
+    // Other columns
+    doc.text(writer.affiliation || 'N/A', 51, rowY);
+    doc.text(writer.publisher || 'N/A', 86, rowY);
+    doc.text(writer.role || 'N/A', 121, rowY);
+    doc.text(writer.ownership || 'N/A', 156, rowY);
+  });
+
+  // Agreement text
+  let agreementY = startY + 12 + session.songwriters.length * 16 + 10;
+  doc.setFontSize(11);
+  doc.text(
+    "The undersigned all agree that the information above is correct.",
+    14,
+    agreementY
+  );
+
+  // Signatures
+  session.songwriters.forEach((writer, index) => {
+    doc.text(
+      `${writer.username} ${formatDate(session.createdAt)}`,
+      14,
+      agreementY + 10 + index * 10
+    );
+  });
+  doc.save(`${session.songTitle}_Split_Sheet.pdf`);
+}
+
   useEffect(() => {
 
     async function fetchSession() {
@@ -68,11 +126,10 @@ export default function SessionsPage() {
             Back to All Sessions
       </button>
       <div>
-
+        <button onClick={handleDownloadPDF}>
+          Download PDF
+        </button>
       </div>
-      <button onClick={() => window.print()}>
-        Print or Save as PDF
-      </button>
 
       </div>
       <div className="wrapper">
