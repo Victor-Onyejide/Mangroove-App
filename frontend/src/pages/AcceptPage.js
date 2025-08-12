@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { joinSession } from '../features/sessionSlice';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 
 export default function AcceptPage() {
     const { id: sessionId } = useParams(); // Get session ID from URL params
@@ -15,17 +14,7 @@ export default function AcceptPage() {
         try {
             const result = await dispatch(joinSession(sessionId)).unwrap(); // Call joinSession route
             toast.success("You have successfully joined the session!");
-
-            // Send the new user's information to the backend
-            await axios.post(`/updateSession/${sessionId}`, {
-                newUser: {
-                    _id: userInfo._id,       // User ID
-                    username: userInfo.username // Username
-                }
-            }, {
-                withCredentials: true // Include credentials for CORS
-            });
-
+            // The joinSession route already updates the session and triggers SSE
             navigate(`/joined/${sessionId}`); // Redirect to JoinedSession page
         } catch (error) {
             toast.error("Failed to join the session. Please try again.");
