@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import SessionAvatars from "../components/SessionAvatars";
 import { setSessionId, setShareLink } from "../features/userSlice";
 import axios from "axios";
-import OwnershipForm from '../components/OwnershipForm';
+// import OwnershipForm from '../components/OwnershipForm';
 import Modal from '../components/Modal';
 
 export default function JoinedSession() {
