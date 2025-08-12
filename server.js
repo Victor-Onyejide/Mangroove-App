@@ -36,6 +36,9 @@ app.use(express.json());
 // SSE route 
 app.get('/event/:sessionId', (req,res) => {
   const {sessionId} = req.params;
+  // Set CORS and credentials headers for SSE
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000'); // or your frontend URL
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');

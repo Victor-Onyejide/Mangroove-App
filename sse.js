@@ -10,6 +10,8 @@ function sendSessionUpdate(sessionId, data) {
         return false;
       }
     });
+  } else {
+    console.log(`No clients connected for session ${sessionId} when sending SSE event.`);
   }
 }
 

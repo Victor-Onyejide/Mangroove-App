@@ -193,10 +193,10 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
 
     // Save the session
     await session.save();
+    await session.populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
     sendSessionUpdate(sessionId, session);
     // Fetch user info for avatar
     const user = await User.findById(userId).select('username');
- 
 
     // Respond with the updated session
     res.json(session);
@@ -219,5 +219,29 @@ userRouter.post('/session/:id/end', isAuth, expressAsyncHandler(async (req, res)
     res.json({ message: 'Session ended successfully', session });
 
 }));
+
+// Route to update ownership for a session
+userRouter.put('/session/:id/ownership', async (req, res) => {
+    const { ownership } = req.body;
+
+    if (!ownership || !Array.isArray(ownership)) {
+        return res.status(400).json({ message: 'Invalid ownership data' });
+    }
+
+    try {
+        const session = await Session.findById(req.params.id);
+
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        session.ownership = ownership;
+        await session.save();
+
+        res.status(200).json({ message: 'Ownership updated successfully', session });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
 
 export default userRouter;
