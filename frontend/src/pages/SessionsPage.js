@@ -94,12 +94,12 @@ export default function SessionsPage() {
       setSession(data);
     }
     //TOD: Remove this later
-    if (isLoggedIn === false) {
-      dispatch(setSessionId(id));
-      dispatch(setShareLink(true));
-      console.log("Navigating ...");
-      navigate('/login');
-    }
+    // if (isLoggedIn === false) {
+    //   // dispatch(setSessionId(id));
+    //   // dispatch(setShareLink(true));
+    //   console.log("Navigating ...");
+    //   navigate('/login');
+    // }
   
     if (id && isLoggedIn) {
       fetchSession();

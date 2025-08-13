@@ -34,6 +34,19 @@ export const joinSession = createAsyncThunk(
         }
     }
 );
+
+export const updateOwnership = createAsyncThunk(
+    'session/updateOwnership',
+    async ({ sessionId, ownership }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`/session/${sessionId}/ownership`, { ownership });
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 const sessionSlice = createSlice({
     name:'sessions',
     initialState:{
@@ -68,6 +81,21 @@ const sessionSlice = createSlice({
                 state.loading = false;
                 state.error = payload;
             })
+            .addCase(updateOwnership.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateOwnership.fulfilled, (state, action) => {
+                state.loading = false;
+                const updatedSession = action.payload.session;
+                if (state.current?._id === updatedSession._id) {
+                    state.current = updatedSession;
+                }
+            })
+            .addCase(updateOwnership.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.message;
+            });
     }
 
 })

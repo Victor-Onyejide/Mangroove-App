@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { signUpUser } from "../features/userSlice";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import '../assets/css/signup.css';
 
 export default function SignUpPage() {
+  const { sessionId, shareLink, userInfo } = useSelector((state) => state.user);
   const [username, setUsername] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
@@ -23,7 +24,12 @@ export default function SignUpPage() {
         signUpUser({ username, email, aka, role, password, affiliation, publisher })
       ).unwrap();
       toast.success('Welcome!');
-      navigate('/sessions');
+      if (shareLink) {
+          //TODO: Check if the sessionId is valid(i.e if the link has expired)
+          navigate(`/accept/${sessionId}`);
+        } else {
+            navigate('/sessions');
+        }
     } catch (err) {
       console.error("Signup error:", err);
       toast.error("Signup failed. Please try again.");

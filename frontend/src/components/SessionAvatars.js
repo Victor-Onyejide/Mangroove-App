@@ -1,6 +1,7 @@
+
 import '../assets/css/sessionAvatars.css';
 
-export default function SessionAvatars({ initialUsers = [] }) {
+export default function SessionAvatars({ initialUsers = [], onAvatarClick }) {
     // Generate initials for a user
     const generateInitials = (name) => {
         if (!name) return '';
@@ -13,8 +14,13 @@ export default function SessionAvatars({ initialUsers = [] }) {
 
     return (
         <div className="session-avatars-container">
-            {initialUsers.map((user, index) => (
-                <div key={index} className="avatar-large">
+            {initialUsers.map((user) => (
+                <div
+                    key={user._id}
+                    className="avatar-large"
+                    onClick={() => onAvatarClick && onAvatarClick(user)}
+                    style={{ cursor: 'pointer' }}
+                >
                     {generateInitials(user.username)} {/* Assuming user has a `username` field */}
                 </div>
             ))}
