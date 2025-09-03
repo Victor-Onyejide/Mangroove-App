@@ -13,8 +13,6 @@ userRouter.get('/', expressAsyncHandler(async(req, res) => {
     res.send({message: 'Message'});
 }));
 userRouter.post('/login', expressAsyncHandler(async(req, res) => {
-    console.log("Login request received:", req.body);
-
     const user = await User.findOne({email: req.body.email});
     if(user)
     {
@@ -120,7 +118,6 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
     const sessionId = req.params.id;
     const session = await Session.findById(sessionId).populate({path:'songwriters', select:'_id  username stageName affiliation publisher role ownership'})
-    console.log("Session fetched Backend:", session);
     const userId = req.user._id;
     const isCreator = session.creator._id.toString() === userId;
     const isParticipant = session.invitations.map(p=> p._id.toString()).includes(userId);
@@ -161,7 +158,6 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
     const invite = session.invitations.find(i => i.invitee.toString() === userId);
     if (invite) {
         invite.status = 'accepted';
-        console.log("Invitation found and marked as accepted:", invite);
     } else {
         console.log("No invitation found for user:", userId);
     }

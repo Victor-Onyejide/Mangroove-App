@@ -17,20 +17,16 @@ const OwnershipForm = ({ sessionId, songwriters, onClose }) => {
 
     const handleSubmit = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
-        console.log('OwnershipForm: handleSubmit called', { sessionId, ownership });
         try {
             // use unwrap to throw on rejected action
             const result = await dispatch(updateOwnership({ sessionId, ownership })).unwrap();
-            console.log('OwnershipForm: updateOwnership result', result);
             // Re-fetch the session so we get the populated songwriter objects (server may return ids)
             try {
                 await dispatch(fetchSession(sessionId)).unwrap();
-                console.log('OwnershipForm: fetchSession completed after update');
             } catch (fetchErr) {
                 console.error('OwnershipForm: fetchSession error after update', fetchErr);
             }
             if (onClose) {
-                console.log('OwnershipForm: calling onClose to close modal');
                 onClose();
             }
         } catch (err) {
@@ -58,7 +54,7 @@ const OwnershipForm = ({ sessionId, songwriters, onClose }) => {
                                     onChange={(e) => handleChange(index, 'writing', e.target.value)}
                                     min="0"
                                     max="100"
-                                    style={{ width: '160px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc', WebkitAppearance: 'none', MozAppearance: 'textfield', appearance: 'textfield' }}
+                                    style={{ width: '160px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
                                 />
                                 <input
                                     type="number"
@@ -67,7 +63,7 @@ const OwnershipForm = ({ sessionId, songwriters, onClose }) => {
                                     onChange={(e) => handleChange(index, 'publishing', e.target.value)}
                                     min="0"
                                     max="100"
-                                    style={{ width: '160px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc', WebkitAppearance: 'none', MozAppearance: 'textfield', appearance: 'textfield' }}
+                                    style={{ width: '160px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
                                 />
                             </div>
                         </div>

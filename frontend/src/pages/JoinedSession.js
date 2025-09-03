@@ -65,7 +65,6 @@ export default function JoinedSession() {
 
     useEffect(() => { 
         dispatch(fetchSession(sessionId));
-        console.log("Fetching session:", session);
     }, [dispatch, sessionId]);
 
     // Track session context for deep links
@@ -73,7 +72,6 @@ export default function JoinedSession() {
         // Only set share-link context when the page is opened while the user is not logged in
         // and not as a result of an explicit logout action.
         if (!isLoggedIn && !isLoggedOut) {
-            console.log("User is not logged in on initial access — setting shared link context");
             dispatch(setSessionId(sessionId));
             dispatch(setShareLink(true));
         }
@@ -92,7 +90,6 @@ export default function JoinedSession() {
     }, [loading, session, isLoggedIn, userId, navigate, sessionId]);
 
     useEffect(() => {
-        console.log("Opening EventSourcePolyfill for session:", sessionId);
     // For local development, use:
     const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
       withCredentials: true
@@ -141,11 +138,6 @@ export default function JoinedSession() {
         setIsModalOpen(true);
     };
 
-    // const closeModal = () => {
-    //     setIsModalOpen(false);
-    //     setSelectedSongwriter(null);
-    // };
-
     if (loading) {
         console.log("Loading state is true");
         return <p>Loading...</p>;
@@ -161,14 +153,7 @@ export default function JoinedSession() {
         console.log("Session is null or undefined");
         return null;
     }
-
-    // const isSongwriter = session.songwriters.map((u) => u._id).includes(userId);
-    // console.log("Is current user a songwriter?", isSongwriter);
     const isCreator = session.creator === userId; 
-    console.log("Session creator ID:", session.creator);
-    console.log("Current user ID:", userId);
-    console.log("Is current user the creator?", isCreator);
-    console.log(session);
     return ( 
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
             <h1>{session.songTitle}</h1>

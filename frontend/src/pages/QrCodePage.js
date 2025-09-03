@@ -27,7 +27,6 @@ const QrCode = () => {
                         withCredentials: true,
                     }
                 );
-                console.log(data)
                 setSession(data);
 
                 //TODO: Store it in redux

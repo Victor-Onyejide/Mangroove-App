@@ -149,7 +149,6 @@ export default function SessionsPage() {
     if (!id) return;
     const doFetch = async () => {
       try {
-        console.log('SessionsPage: dispatching fetchSession for id', id);
         await dispatch(fetchSession(id)).unwrap();
       } catch (err) {
         console.error('SessionsPage: fetchSession error', err);
