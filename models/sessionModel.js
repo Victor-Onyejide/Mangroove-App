@@ -15,8 +15,9 @@ const sessionSchema = new Schema({
         invitedAt:{type:Date, default:Date.now}
     }],
     ownership: [{
-        songwriter: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-        percentage: { type: Number, required: true, min: 0, max: 100 }
+    songwriter: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    writing: { type: Number, required: true, min: 0, max: 100, default: 0 },
+    publishing: { type: Number, required: true, min: 0, max: 100, default: 0 }
     }]
 })
 const Session = mongoose.model('Session', sessionSchema);

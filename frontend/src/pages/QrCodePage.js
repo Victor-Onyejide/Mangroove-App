@@ -1,5 +1,7 @@
 import { QRCode } from 'react-qr-code';
 import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { getCurrentUser } from '../features/userSlice';
 import user from './database.json';
 import { useParams } from 'react-router-dom';
 import { ReactComponent as ShareSVG } from '../assets/svg/share.svg';
@@ -11,7 +13,11 @@ const QrCode = () => {
     const [sessionLink, setSessionLink] = useState('');
     const navigate = useNavigate();
     const { id } = useParams();
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const dispatch = useDispatch();
+    const userInfo = useSelector((state) => state.user.userInfo);
+    const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+    const loading = useSelector((state) => state.user.loading);
+    // ...existing code...
 
     useEffect(() => {
         const fetchSession = async (req, res) => {
@@ -33,6 +39,10 @@ const QrCode = () => {
             }
 
         };
+        if (!loading && !isLoggedIn) {
+            navigate('/login');
+            return;
+        }
         if (id) fetchSession();
     }, [id]);
 

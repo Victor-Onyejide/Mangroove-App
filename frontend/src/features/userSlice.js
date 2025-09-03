@@ -7,6 +7,8 @@ const initialState = {
     sessionId: null,
     userInfo: null,
     shareLink: false,
+    // Tracks an explicit logout event so UI can distinguish "logged out via action"
+    isLoggedOut: false,
     loading: false,
     error: null,
 };
@@ -99,6 +101,7 @@ const userSlice = createSlice({
             state.userType = '';
             state.sessionId = null;
             state.shareLink = false;
+            state.isLoggedOut = true;
             state.userInfo = null;
         },
     },
@@ -112,6 +115,7 @@ const userSlice = createSlice({
             .addCase(signUpUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.isLoggedIn = true;
+                state.isLoggedOut = false;
                 state.userInfo = action.payload; // Populate userInfo with the signed-up user data
             })
             .addCase(signUpUser.rejected, (state, action) => {
@@ -126,6 +130,7 @@ const userSlice = createSlice({
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.isLoggedIn = true;
+                state.isLoggedOut = false;
                 state.userType = 'user';
                 state.userInfo = action.payload;
             })
@@ -140,11 +145,13 @@ const userSlice = createSlice({
             .addCase(getCurrentUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.isLoggedIn = true;
+                state.isLoggedOut = false;
                 state.userInfo = action.payload;
             })
             .addCase(getCurrentUser.rejected, (state, action) => {
                 state.loading = false;
                 state.isLoggedIn = false;
+                // keep isLoggedOut as-is here; rejection can be due to expired session, not explicit logout
                 state.userInfo = null; // Clear userInfo if the user is not logged in
                 state.error = action.payload; 
             })
@@ -161,6 +168,7 @@ const userSlice = createSlice({
                 state.sessionId = null;
                 state.shareLink = false;
                 state.userInfo = null; // Clear userInfo on logout
+                state.isLoggedOut = true;
                 // Clear local storage, including Initials
                 localStorage.removeItem('Initials');
             })
