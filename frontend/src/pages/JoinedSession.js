@@ -9,7 +9,9 @@ import SessionAvatars from "../components/SessionAvatars";
 import { setSessionId, setShareLink } from "../features/userSlice";
 import axios from "axios";
 import OwnershipForm from '../components/OwnershipForm';
-import Modal from '../components/Modal';
+// import Modal from '../components/Modal';
+import Modal from 'react-modal';
+Modal.setAppElement('#root');
 
 export default function JoinedSession() {
     const { id: sessionId } = useParams();
@@ -21,6 +23,33 @@ export default function JoinedSession() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const userId = useSelector((state) => state.user.userInfo?._id);
     const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+    const isLoggedOut = useSelector((state) => state.user.isLoggedOut);
+    const userLoading = useSelector((state) => state.user.loading);
+
+    const customStyles = {
+        content: {
+        top: '50%',
+        left: '50%',
+        right: 'auto',
+        bottom: 'auto',
+        marginRight: '-50%',
+        transform: 'translate(-50%, -50%)',
+        padding: '20px',
+        borderRadius: '8px',
+        width: '300px',
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+        },
+        overlay: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        },
+    }
+    const openModal = () => {
+        setIsModalOpen(true);
+    }
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedSongwriter(null);
+    };
 
     const handleEndSession = async () => {
         try {
@@ -36,40 +65,39 @@ export default function JoinedSession() {
 
     useEffect(() => { 
         dispatch(fetchSession(sessionId));
-        console.log("Fetching session:", session);
+    }, [dispatch, sessionId]);
 
-        if (isLoggedIn === false) {
-              dispatch(setSessionId(sessionId));
-              dispatch(setShareLink(true));
-              console.log("Navigating ...");
-              navigate('/login');
-            }
-        
-        const fetchSessionData = async () => {
-            try {
-                const result = await dispatch(fetchSession(sessionId)).unwrap();
-                console.log("Fetched session after join or SSE:", result);
-            } catch (error) {
-                console.error("Error fetching session data:", error);
-                toast.error("Failed to fetch session data");
-            }
-        };
-
-        if (sessionId && isLoggedIn) {
-            fetchSessionData();
+    // Track session context for deep links
+    useEffect(() => {
+        // Only set share-link context when the page is opened while the user is not logged in
+        // and not as a result of an explicit logout action.
+        if (!isLoggedIn && !isLoggedOut) {
+            dispatch(setSessionId(sessionId));
+            dispatch(setShareLink(true));
         }
-    }, [dispatch,sessionId]);
+    }, [isLoggedIn, isLoggedOut, dispatch, sessionId]);
+
+    // Membership redirect only
+    useEffect(() => {
+        if (!loading && session && isLoggedIn && userId) {
+            const isSongwriter = session.songwriters.some(u => u._id === userId);
+            const isCreator = session.creator === userId; 
+
+            if (!isSongwriter && !isCreator) {
+                navigate(`/accept/${sessionId}`);
+            }
+        }
+    }, [loading, session, isLoggedIn, userId, navigate, sessionId]);
 
     useEffect(() => {
-        console.log("Opening EventSourcePolyfill for session:", sessionId);
     // For local development, use:
-    // const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
-    //   withCredentials: true
-    // });
+    const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
+      withCredentials: true
+    });
     // For production (Heroku):
-    const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`, {
-            withCredentials: true
-        });
+        // const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`, {
+        //         withCredentials: true
+        //     });
         eventSource.onopen = () => {
             console.log("EventSource connection opened.");
         };
@@ -110,11 +138,6 @@ export default function JoinedSession() {
         setIsModalOpen(true);
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setSelectedSongwriter(null);
-    };
-
     if (loading) {
         console.log("Loading state is true");
         return <p>Loading...</p>;
@@ -130,14 +153,7 @@ export default function JoinedSession() {
         console.log("Session is null or undefined");
         return null;
     }
-
-    // const isSongwriter = session.songwriters.map((u) => u._id).includes(userId);
-    // console.log("Is current user a songwriter?", isSongwriter);
     const isCreator = session.creator === userId; 
-    console.log("Session creator ID:", session.creator);
-    console.log("Current user ID:", userId);
-    console.log("Is current user the creator?", isCreator);
-    console.log(session);
     return ( 
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
             <h1>{session.songTitle}</h1>
@@ -146,7 +162,12 @@ export default function JoinedSession() {
             </button>)}
             <SessionAvatars initialUsers={session.songwriters} onAvatarClick={handleAvatarClick} />
             {isModalOpen && isCreator && (
-                <Modal onClose={closeModal}>
+                <Modal 
+                   isOpen={isModalOpen}
+                    onRequestClose={closeModal}
+                    onClose={closeModal}
+                    style={customStyles}
+                > 
                     <OwnershipForm
                         sessionId={session._id}
                         songwriters={[selectedSongwriter]}

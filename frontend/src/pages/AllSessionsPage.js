@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from 'react-redux';
+import { getCurrentUser } from '../features/userSlice';
 import { Link } from "react-router-dom";
 import { ReactComponent as FileSVG } from '../assets/svg/file.svg';
 import axios from 'axios';
@@ -15,9 +17,19 @@ export default function AllSessionsPage() {
   const [linkExpiresAt, setLinkExpiresAt] = useState(new Date());
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const navigate = useNavigate();
-  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  const dispatch = useDispatch();
+  const userInfo = useSelector((state) => state.user.userInfo);
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
+  const loading = useSelector((state) => state.user.loading);
+  // ...existing code...
   const [mySessions, setMySessions] = useState();
   const [joinedSessions, setMyJoinedSessions] = useState();
+  useEffect(() => {
+    if (!loading && !isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+  }, [isLoggedIn, loading, navigate]);
   // Custom styles for the modal to center it on the screen
   const customStyles = {
     content: {

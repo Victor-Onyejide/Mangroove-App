@@ -13,8 +13,6 @@ userRouter.get('/', expressAsyncHandler(async(req, res) => {
     res.send({message: 'Message'});
 }));
 userRouter.post('/login', expressAsyncHandler(async(req, res) => {
-    console.log("Login request received:", req.body);
-
     const user = await User.findOne({email: req.body.email});
     if(user)
     {
@@ -120,7 +118,6 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
     const sessionId = req.params.id;
     const session = await Session.findById(sessionId).populate({path:'songwriters', select:'_id  username stageName affiliation publisher role ownership'})
-    console.log("Session fetched Backend:", session);
     const userId = req.user._id;
     const isCreator = session.creator._id.toString() === userId;
     const isParticipant = session.invitations.map(p=> p._id.toString()).includes(userId);
@@ -161,7 +158,6 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
     const invite = session.invitations.find(i => i.invitee.toString() === userId);
     if (invite) {
         invite.status = 'accepted';
-        console.log("Invitation found and marked as accepted:", invite);
     } else {
         console.log("No invitation found for user:", userId);
     }
@@ -205,7 +201,7 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
 userRouter.post('/session/:id/end', isAuth, expressAsyncHandler(async (req, res) => {
     const sessionId = req.params.id;
     const userId = req.user._id;
-    const session = await Session.findById(sessionId);
+    let session = await Session.findById(sessionId);
 
     if (!session) {
         return res.status(404).json({ message: 'Session not found' });
@@ -215,9 +211,9 @@ userRouter.post('/session/:id/end', isAuth, expressAsyncHandler(async (req, res)
     }
     session.isEnded = true;
     await session.save();
+    session = await Session.findById(sessionId).populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
     sendSessionUpdate(sessionId, {ended:true});
     res.json({ message: 'Session ended successfully', session });
-
 }));
 
 // Route to update ownership for a session
@@ -235,8 +231,27 @@ userRouter.put('/session/:id/ownership', async (req, res) => {
             return res.status(404).json({ message: 'Session not found' });
         }
 
-        session.ownership = ownership;
+        // Merge incoming ownership entries into existing session.ownership
+        // so partial updates don't wipe other songwriters' ownerships.
+        const existingOwnership = Array.isArray(session.ownership) ? session.ownership.slice() : [];
+        ownership.forEach(o => {
+            const songwriterId = String(o.songwriter);
+            // Accept either writing/publishing or a single percentage for backward compatibility
+            const writing = o.writing !== undefined ? Number(o.writing) : (o.percentage !== undefined ? Number(o.percentage) : 0);
+            const publishing = o.publishing !== undefined ? Number(o.publishing) : 0;
+            const idx = existingOwnership.findIndex(e => String(e.songwriter) === songwriterId);
+            if (idx !== -1) {
+                existingOwnership[idx].writing = writing;
+                existingOwnership[idx].publishing = publishing;
+            } else {
+                existingOwnership.push({ songwriter: songwriterId, writing, publishing });
+            }
+        });
+        session.ownership = existingOwnership;
         await session.save();
+
+        // Re-populate songwriters before returning to ensure frontend gets full objects
+    await session.populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
 
         res.status(200).json({ message: 'Ownership updated successfully', session });
     } catch (error) {

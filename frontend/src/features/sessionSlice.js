@@ -39,7 +39,7 @@ export const updateOwnership = createAsyncThunk(
     'session/updateOwnership',
     async ({ sessionId, ownership }, { rejectWithValue }) => {
         try {
-            const response = await axios.put(`/session/${sessionId}/ownership`, { ownership });
+            const response = await axios.put(`/api/user/session/${sessionId}/ownership`, { ownership });
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);

@@ -68,7 +68,6 @@ app.get('/event/:sessionId', (req,res) => {
 app.post('/updateSession/:sessionId', (req, res) => {
   const { sessionId } = req.params;
   const data = req.body; // Get the data from the request body
-  console.log(`Received update for session ${sessionId}:`, data);
 
   // Send the data to all clients in the session
   sendSessionUpdate(sessionId, data);

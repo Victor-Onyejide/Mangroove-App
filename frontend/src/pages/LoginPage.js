@@ -12,11 +12,15 @@ export default function LoginPage() {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        //This condition is for the HomePage
-        if (userInfo){
-            navigate('/sessions');
+        // After login, redirect based on session join state
+        if (userInfo) {
+            if (shareLink && sessionId) {
+                navigate(`/accept/${sessionId}`);
+            } else {
+                navigate('/sessions');
+            }
         }
-    }, [userInfo, navigate]);
+    }, [userInfo, shareLink, sessionId, navigate]);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -29,14 +33,7 @@ export default function LoginPage() {
 
             if (loginUser.fulfilled.match(result)) {
                 toast.success('Welcome!');
-
-                // Navigate based on shareLink or default to /sessions
-                if (shareLink) {
-                    //TODO: Check if the sessionId is valid(i.e if the link has expired)
-                    navigate(`/accept/${sessionId}`);
-                } else {
-                    navigate('/sessions');
-                }
+                // Redux state will trigger redirect via useEffect above
             } else {
                 toast.error(result.payload || "Invalid login credentials");
                 console.error('Login failed:', result.payload);

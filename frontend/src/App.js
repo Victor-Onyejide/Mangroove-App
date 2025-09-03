@@ -48,24 +48,18 @@ function App() {
 
 
 useEffect(() => {
-    const fetchUser = async () => {
-      try {
-          await dispatch(getCurrentUser()).unwrap();
-      } catch (error) {
-          console.error('Error fetching user info:', error);
-          navigate("/login"); // Redirect to login if fetching user info fails
-        }
-      }
-    if (
-      !userInfo &&
-      window.location.pathname !== '/signup' &&
-      window.location.pathname !== '/login'
-      && !isLoggedIn
-    ) {
-      fetchUser();
-    }
+  dispatch(getCurrentUser());
+}, [dispatch]);
 
-}, []);
+useEffect(() => {
+  if (
+    !isLoggedIn &&
+    window.location.pathname !== '/login' &&
+    window.location.pathname !== '/signup'
+  ) {
+    navigate('/login');
+  }
+}, [isLoggedIn, navigate]);
 
   return (
     <div>
