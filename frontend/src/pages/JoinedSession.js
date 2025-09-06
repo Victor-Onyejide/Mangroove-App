@@ -91,15 +91,15 @@ export default function JoinedSession() {
 
     useEffect(() => {
     // For local development, use:
-    const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
-      withCredentials: true
-    });
+    // const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
+    //   withCredentials: true
+    // });
     // For production (Heroku):
-        // const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`, {
-        //         withCredentials: true
-        //     });
-        eventSource.onopen = () => {
-            console.log("EventSource connection opened.");
+    const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`, {
+        withCredentials: true
+    });
+    eventSource.onopen = () => {
+        console.log("EventSource connection opened.");
         };
         eventSource.onmessage = (event) => {
             console.log("SSE onmessage triggered");

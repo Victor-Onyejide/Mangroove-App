@@ -18,6 +18,7 @@ import AcceptPage from './pages/AcceptPage';
 import './axiosConfig.js';
 import { getCurrentUser, logoutUser } from './features/userSlice';
 import "jspdf-autotable";
+import SessionsEditPage from './pages/SessionsEditPage.js';
 
 
 function App() {
@@ -103,6 +104,7 @@ useEffect(() => {
             <Route path="/guest" element={<GuestPage/>}/>
             <Route path="/joined/:id" element={<JoinedSession/>}/>
             <Route path="/accept/:id" element={<AcceptPage/>}/>
+            <Route path="/session/:id/edit" element={<SessionsEditPage/>}/>
           </Routes>
       </div>
 
