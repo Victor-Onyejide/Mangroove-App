@@ -68,7 +68,7 @@ const OwnershipForm = ({ sessionId, songwriters, onClose }) => {
                             </div>
                         </div>
                     ))}
-                    <button type="button" onClick={handleSubmit} style={{ padding: '8px 16px', borderRadius: '6px', background: '#007bff', color: '#fff', border: 'none', fontWeight: 'bold' }}>
+                    <button type="button" onClick={handleSubmit} style={{ padding: '8px 16px', borderRadius: '6px', background: '#029e5c', color: '#fff', border: 'none', fontWeight: 'bold' }}>
                         Update Ownership
                     </button>
                 </form>

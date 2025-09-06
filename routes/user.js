@@ -259,4 +259,67 @@ userRouter.put('/session/:id/ownership', async (req, res) => {
     }
 });
 
+// Patch to update session fields (e.g., songTitle). Allowed for creator or songwriters.
+userRouter.patch('/session/:id', isAuth, expressAsyncHandler(async (req, res) => {
+    const sessionId = req.params.id;
+    const { songTitle } = req.body;
+
+    const session = await Session.findById(sessionId);
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+
+    const userId = req.user._id.toString();
+    const isCreator = String(session.creator) === userId;
+    const isSongwriter = Array.isArray(session.songwriters) && session.songwriters.map(s => String(s)).includes(userId);
+
+    if (!isCreator && !isSongwriter) {
+        return res.status(403).json({ message: 'Not authorized to update this session' });
+    }
+
+    if (songTitle !== undefined) {
+        session.songTitle = String(songTitle);
+    }
+
+    await session.save();
+    await session.populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
+
+    // Notify SSE clients of the update
+    try {
+        sendSessionUpdate(sessionId, session);
+    } catch (e) {
+        console.warn('Failed to send SSE update after session patch:', e);
+    }
+
+    res.json({ message: 'Session updated', session });
+}));
+
+// Delete a session (only creator)
+userRouter.delete('/session/:id', isAuth, expressAsyncHandler(async (req, res) => {
+    const sessionId = req.params.id;
+    const userId = req.user._id;
+
+    const session = await Session.findById(sessionId);
+    if (!session) {
+        return res.status(404).json({ message: 'Session not found' });
+    }
+
+    if (String(session.creator) !== String(userId)) {
+        return res.status(403).json({ message: 'Only the session creator can delete the session' });
+    }
+
+    try {
+        await Session.findByIdAndDelete(sessionId);
+        // Notify any SSE clients that the session was deleted
+        // try {
+        //     sendSessionUpdate(sessionId, { deleted: true });
+        // } catch (e) {
+        //     console.warn('Failed to send SSE delete update:', e);
+        // }
+
+        res.json({ message: 'Session deleted successfully', sessionId });
+    } catch (err) {
+        console.error('Error deleting session:', err);
+        res.status(500).json({ message: 'Failed to delete session' });
+    }
+}));
+
 export default userRouter;
