@@ -5,8 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #15191D;
-  color: white;
+  background-color: white;
+  color: black;
 }
 
 code {
@@ -29,6 +29,7 @@ nav {
   position: fixed;
   top: 0;
 }
+/*
 nav {
   display: flex;
   width: 100%;
@@ -49,11 +50,11 @@ nav {
 }
 .links.active {
   display: flex;
-}
+} */
 nav a:hover{
-  background-color: #2d353e;
+  background-color: #ebebeb;
 }
-nav .menu {
+/* nav .menu {
   display: flex;
   flex-direction: column;
 }
@@ -105,7 +106,7 @@ nav .menu .bar {
 }
 .menu.open .bar:nth-child(3) {
   transform: translateX(-50%) translateY(-8px) rotate(-45deg);
-}
+} */
 button {
   all: unset;
   background: none;

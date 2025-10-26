@@ -24,7 +24,7 @@ import SessionsEditPage from './pages/SessionsEditPage.js';
 function App() {
   const navigate = useNavigate(); 
   const dispatch = useDispatch();
-  const { isLoggedIn } = useSelector((state) => state.user);
+  const { isLoggedIn, loading } = useSelector((state) => state.user);
   const userInfo = useSelector((state) => state.user.userInfo);
 
   //Menu Open and Close State
@@ -53,20 +53,19 @@ useEffect(() => {
 }, [dispatch]);
 
 useEffect(() => {
-  if (
-    !isLoggedIn &&
-    window.location.pathname !== '/login' &&
-    window.location.pathname !== '/signup'
-  ) {
+  // Avoid redirect flicker while checking session, and allow public home route
+  if (loading) return;
+  const publicPaths = ['/', '/login', '/signup'];
+  if (!isLoggedIn && !publicPaths.includes(window.location.pathname)) {
     navigate('/login');
   }
-}, [isLoggedIn, navigate]);
+}, [isLoggedIn, loading, navigate]);
 
   return (
     <div>
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="navContainer">
-        <nav>
+        {/* <nav>
           <Link to="/" className="logo">
               M
           </Link>
@@ -89,13 +88,13 @@ useEffect(() => {
               <Link to="/sessions" className="link p-5"> All Sessions</Link>
             </div>
           </div>
-        </nav>
+        </nav> */}
       </div>
 
       <div className="App">
           <Routes>
-            {/* <Route path="/" element={<HomePage/>}/> */}
-            <Route path="/" element={<LoginPage/>}/>
+            <Route path="/" element={<HomePage/>}/>
+            {/* <Route path="/" element={<LoginPage/>}/> */}
             <Route path="/login" element={<LoginPage/>}/>
             <Route path="/signup" element={<SignUpPage/>}/>
             <Route path="/sessions" element={<AllSessionsPage/>}/>

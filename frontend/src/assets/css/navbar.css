@@ -4,3 +4,111 @@ nav .wrapper{
     align-items: center;
     width: 120px;
 }
+.navbarComponent{
+  display: flex;
+  width: 100%;
+  background-color: #FEFFFE;
+  padding: 0px 20px 0px 20px;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+}
+.navbarComponent .logowrapper{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+.navbarComponent .logolinetxt{
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
+.navbarComponent .logotxtwrapper{
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+.logotxt-bld{
+    font-weight: 700;
+    /* color: #0b2b20; */
+    font-size: 18px;
+}
+.navbarComponent .navigation{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.navbarComponent .navigation .link{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    color:black;
+}
+
+/* Sign In */
+.navbarComponent .signinbtn{
+  background-color: #08A045;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+/* MENU */
+.menu {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  position: relative;
+}
+
+nav .menu .bar {
+  margin: 3px;
+  height: 3px;
+  width: 30px;
+  background-color: #08A045;
+  border-radius: 10px;
+}
+nav .menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu .bar {
+  margin: 4px 0;
+  height: 4px;
+  width: 30px;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  display: block;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+
+.menu .bar:nth-child(1) {
+  top: 10px;
+}
+.menu .bar:nth-child(2) {
+  top: 18px;
+}
+.menu .bar:nth-child(3) {
+  top: 26px;
+}
+.menu.open .bar:nth-child(1) {
+  transform: translateX(-50%) translateY(8px) rotate(45deg);
+}
+.menu.open .bar:nth-child(2) {
+  opacity: 0;
+}
+.menu.open .bar:nth-child(3) {
+  transform: translateX(-50%) translateY(-8px) rotate(-45deg);
+}
