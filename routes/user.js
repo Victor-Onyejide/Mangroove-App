@@ -101,11 +101,13 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 
     const {
         songTitle,
+        sessionType
     } = req.body;
 
     const session = new Session({
         creator: req.user._id,
         songTitle: songTitle,
+        sessionType: sessionType,
         songwriters: [req.user._id],
         joinLink: uuidv4(),
         linkExpiresAt: new Date(),

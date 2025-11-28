@@ -15,7 +15,7 @@ export default function AcceptPage() {
             const result = await dispatch(joinSession(sessionId)).unwrap(); // Call joinSession route
             toast.success("You have successfully joined the session!");
             // The joinSession route already updates the session and triggers SSE
-            navigate(`/joined/${sessionId}`); // Redirect to JoinedSession page
+            navigate(`/session-v2/${sessionId}`); // Redirect to JoinedSession page
         } catch (error) {
             toast.error("Failed to join the session. Please try again.");
         }

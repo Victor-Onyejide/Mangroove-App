@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import React from "react";
 import '../assets/css/navbar.css';
 
-export default function NavBar(){
+export default function Navbar({ onSignInClick, userInfo, onLogout }){
     const [menuOpen, setMenuOpen] = React.useState(false);
     
     const toggle = () => {
@@ -28,16 +28,48 @@ export default function NavBar(){
             </div>
 
             <div className="navigation">
-                <Link className="link">ABOUT</Link>
-                <Link className="link">FEATURES</Link>
+                <Link className="link" to="#about">ABOUT</Link>
+                <Link className="link" to="#features">FEATURES</Link>
                 <Link className="link">PRICING</Link>
             </div>
 
-         <button
-            className="btn signinbtn"
-          >
-            SIGN IN
-          </button>
+                                {userInfo ? (
+                                    <button
+                                        className="btn signinbtn"
+                                        onClick={onLogout}
+                                        type="button"
+                                    >
+                                        SIGN OUT
+                                    </button>
+                                ) : (
+                                    <button
+                                        className="btn signinbtn"
+                                        onClick={onSignInClick}
+                                        type="button"
+                                    >
+                                        SIGN IN
+                                    </button>
+                                )}
+
+                    {/* Side Drawer */}
+                    {menuOpen && <div className="sidenav-overlay" onClick={toggle} />}
+                    <aside className={`sidenav${menuOpen ? ' show' : ''}`} aria-hidden={!menuOpen}>
+                        <div className="sidenav-header">
+                            <Link to="/" className="logotxtwrapper">
+                                <div className="logolinetxt">
+                                    <span className="logotxt-bld">MANGROVE</span>
+                                    <span className="logotxt-sm">STUDIOS</span>
+                                </div>
+                            </Link>
+                        </div>
+                        <nav className="sidenav-nav">
+                            <Link className="item active" to="#">Dashboard</Link>
+                            <Link className="item" to="/sessions-v2">Sessions</Link>
+                            <Link className="item" to="#">Split Sheets</Link>
+                            <hr />
+                            <Link className="item" to="#">Send us a message</Link>
+                        </nav>
+                    </aside>
         </nav>
     )
 }

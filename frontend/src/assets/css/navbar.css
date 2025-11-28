@@ -6,12 +6,19 @@ nav .wrapper{
 }
 .navbarComponent{
   display: flex;
+  /* Use fixed positioning so the navbar always stays at the top of the viewport.
+     position: sticky can be impacted by ancestor stacking contexts and overflow rules
+     in complex layouts; fixed is more reliable for a global app nav. */
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999; /* ensure navbar sits above any transformed/stacked content like .userprofile */
   width: 100%;
   background-color: #FEFFFE;
-  padding: 0px 20px 0px 20px;
+  padding: 0px 20px;
   align-items: center;
-  justify-content: space-around;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+  justify-content: space-between;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.06);
 }
 .navbarComponent .logowrapper{
     display: flex;
@@ -97,6 +104,67 @@ nav .menu {
 .menu .bar:nth-child(1) {
   top: 10px;
 }
+
+/* Side drawer overlay */
+.sidenav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 998;
+}
+
+/* Side drawer */
+.sidenav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 320px;
+  background: #fff;
+  border-radius: 0 24px 24px 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  transform: translateX(-110%);
+  transition: transform 220ms ease;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+}
+.sidenav.show {
+  transform: translateX(0);
+}
+.sidenav-header {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 8px;
+}
+.sidenav-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 8px;
+}
+.sidenav-nav .item {
+  color: #5B5B5B;
+  text-decoration: none;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.sidenav-nav .item.active {
+  background: #EFEFEF;
+  padding: 14px 12px;
+  border-radius: 10px;
+  color: #1B4332;
+}
+.sidenav nav hr, .sidenav-nav hr {
+  border: none;
+  height: 1px;
+  background: rgba(0,0,0,0.15);
+  margin: 8px 0 0 0;
+}
 .menu .bar:nth-child(2) {
   top: 18px;
 }
@@ -111,4 +179,10 @@ nav .menu {
 }
 .menu.open .bar:nth-child(3) {
   transform: translateX(-50%) translateY(-8px) rotate(-45deg);
+}
+@media (max-width: 800px) {
+ .navbarComponent .navigation{
+  display:none;
+ }
+  
 }

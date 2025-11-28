@@ -1,7 +1,13 @@
 // import React from 'react';
 // import './HomePage.css';
 
-import NavBar from "../components/Navbar";
+// Navbar and auth modals are now handled in App.js (global), so local imports removed
+// import Navbar from "../components/Navbar";
+// import Modal from "../components/Modal";
+// import SigninForm from "../components/SigninForm";
+// import SignupForm from "../components/SignupForm";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import '../assets/css/home.css';
 import heroprofile from '../assets/img/danz.png';
 import splitimg from '../assets/img/homesplitimg.png';
@@ -11,9 +17,17 @@ import step1 from '../assets/img/step1.png';
 import step3 from '../assets/img/step3.png';
 
 export default function HomePage() {
+  // login/signup state moved to App.js so nav and modals are global
+  const navigate = useNavigate();
+  const { sessionId, shareLink } = useSelector((state) => state.user);
+
+  const handleNavToSessionsPage = () => {
+    navigate('/sessions-v2')
+  }
+
   return (
     <>
-      <NavBar />
+      {/* Navbar and auth modals are now provided by `App.js` at the app level */}
       <section className="herosection">
         <div className="herosection-left">
           <h1>Protect your music. <br/>
@@ -25,8 +39,8 @@ export default function HomePage() {
             session records.
           </p>
 
-          <button className="join-session">Join A Session</button>
-          <button className="create-session">Create A Session</button>
+          <button className="join-session" onClick={handleNavToSessionsPage}>Join A Session</button>
+          <button className="create-session" onClick={handleNavToSessionsPage}>Create A Session</button>
         </div>
 
         <div className="userprofile">
@@ -84,12 +98,13 @@ export default function HomePage() {
                   <div className="session-sub">Tunde</div>
                 </div>
                 <div className="session-card">
-                  <img alt="Y2K" />
+                  <img alt="Y2K" src={require('../assets/img/Image above-2.png')}/>
                   <div className="session-title">Y2K</div>
                   <div className="session-sub">Tunde</div>
                 </div>
                 <div className="session-card">
-                  {/* <img src={require()} alt="Impromptu" /> */}
+
+                  <img src={require('../assets/img/Image above-3.png')} alt="Impromptu" />
                   <div className="session-title">Impromptu</div>
                   <div className="session-sub">Mavin the Man</div>
                 </div>
@@ -151,7 +166,7 @@ export default function HomePage() {
       </section>
 
 
-      <section className="pricing-section">
+      <section className="pricing-section" id="pricing">
         <div className="pricing-inner">
           <h2 className="pricing-title">Choose the plan that fits your flow</h2>
           <p className="pricing-sub">Start free, upgrade when you need more sessions.</p>
@@ -241,7 +256,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="protect">
+      <section className="protect" id="features">
         <div className="protect-header">
           <h2>Everything you need to protect your music</h2>
           <p className="protect-sub">Mangrove takes the hassle out of split sheets so you can focus on creating.</p>
@@ -249,33 +264,33 @@ export default function HomePage() {
 
         <div className="protect-inner">
           <div className="protect-grid">
-            <div className="protect-card small">
-              <img src={require('../assets/img/InstantSplitSheet.png')} alt="split card" />
-            </div>
+            {/* <div className="protect-card small"> */}
+              <img className="proctect-img" src={require('../assets/img/InstantSplitSheet.png')} alt="split card" />
+            {/* </div> */}
             <div className="protect-feature">
               <h4>Instant Split Sheet Creation</h4>
               <p>No more clunky Word templates. Generate professional split sheets in seconds, auto-filled with your profile data.</p>
             </div>
 
-            <div className="protect-card qr">
-              <img src={require('../assets/img/verticalcallout.png')} alt="qr card" />
-            </div>
+            {/* <div className="protect-card qr"> */}
+              <img className="proctect-img" src={require('../assets/img/verticalcallout.png')} alt="qr card" />
+            {/* </div> */}
             <div className="protect-feature">
               <h4>QR Code Sign-In</h4>
               <p>Invite collaborators instantly. They just scan and join the session — no login chaos, no lost contacts.</p>
             </div>
 
-            <div className="protect-card log">
-              <img src={require('../assets/img/negotiations.png')} alt="log card" />
-            </div>
+            {/* <div className="protect-card log"> */}
+              <img className="proctect-img" src={require('../assets/img/negotiations.png')} alt="log card" />
+            {/* </div> */}
             <div className="protect-feature">
               <h4>Real-Time Negotiation & Approvals</h4>
               <p>Finalize ownership splits on the spot. Everyone sees changes live, reducing disputes later.</p>
             </div>
 
-            <div className="protect-card jam">
-              <img src={require('../assets/img/jams.png')} alt="jam card" />
-            </div>
+            {/* <div className="protect-card jam"> */}
+              <img className="proctect-img" src={require('../assets/img/jams.png')} alt="jam card" />
+            {/* </div> */}
             <div className="protect-feature">
               <h4>Mangrove Jams</h4>
               <p>Relive your best sessions. Highlights showcase your top collaborators, songs, and moments.</p>
@@ -284,7 +299,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="built-for">
+      <section className="built-for" id="about">
         <h2>Built for every role in the studio</h2>
         <div className="built-for-inner">
           <div className="built-card">
@@ -359,8 +374,8 @@ export default function HomePage() {
           <h2>Start your first free session today</h2>
 
           <div className="cta-buttons">
-            <button className="cta-join">JOIN A SESSION</button>
-            <button className="cta-create">CREATE A SESSION</button>
+            <button className="cta-join" onClick={handleNavToSessionsPage}>JOIN A SESSION</button>
+            <button className="cta-create" onClick={handleNavToSessionsPage}>CREATE A SESSION</button>
           </div>
 
           <ul className="cta-features">

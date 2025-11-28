@@ -4,28 +4,273 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    /* width: 600px; */
+    /* height: 500px; */
+    /* keep overlay itself clear; glass effect moved to pseudo-element */
+    background: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
+/* Create the blurred, dimmed backdrop behind the modal content */
+.modal-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 0;
+    /* ensure interaction passes through to overlay/content */
+    pointer-events: none;
+}
+
 .modal-content {
     background: white;
-    padding: 20px;
-    border-radius: 8px;
+    /* solid white so panel is not affected by backdrop */
+    /* padding: 32px 36px; */
+    border-radius: 30px;
     position: relative;
-    width: 400px;
-    max-width: 90%;
+    /* width: min(560px, 92vw); */
+    /* max-width: 50px; */
+    /* max-width: 92vw; */
+    max-width: 52vw;
+    box-shadow:
+        0 24px 60px rgba(0, 0, 0, 0.22),
+        0 2px 10px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+    /* above the ::before backdrop */
 }
 
 .modal-close {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 16px;
+    right: 16px;
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: 28px;
+    line-height: 1;
+    color: #1B4332;
+    /* deep green close icon */
     cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.modal-close:hover {
+    opacity: 1;
+    transform: scale(1.06);
+}
+
+.signinModal,
+.signupModal,
+.createSessionModal {
+    background-color: white;
+    padding: 30px 30px 30px 30px;
+    margin-top: 250px;
+    /* height: 500px;
+    width: 500px; */
+}
+
+/* Tweaks specifically for the Create Session modal */
+.modal-content .createSessionModal {
+    max-width: 520px; /* slightly wider for form inputs */
+    padding: 28px;
+    border-radius: 20px;
+}
+
+.modal-content .createSessionModal h2 {
+    margin: 0 0 12px;
+    font-size: 22px;
+    color: #123a25;
+}
+
+/* Login modal visuals inside the panel */
+.modal-content .signinModal h2 {
+    margin: 0 0 8px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #1B4332;
+    /* deep green */
+}
+
+.modal-content .signinModal p {
+    margin: 0 0 16px;
+}
+
+.modal-content .signinModal .form,
+.modal-content .signupModal .form,
+.modal-content .createSessionModal .form
+{
+    display: flex;
+    /* grid-template-columns: 1fr 1fr; */
+    flex-direction: column;
+    gap: 12px;
+    align-items: start;
+}
+
+.modal-content .signinModal .form input,
+.modal-content .signupModal .form input,
+.modal-content .createSessionModal .form input,
+.modal-content .signinModal .form select,
+.modal-content .signupModal .form select,
+.modal-content .createSessionModal .form select
+ {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) inset;
+    outline: none;
+}
+
+/* Make inputs span full width when explicitly requested (inline style or class) */
+.modal-content .createSessionModal .form .fullwidth,
+.modal-content .createSessionModal .form input[style*="gridColumn"] {
+    grid-column: 1 / -1;
+}
+
+.modal-content .signinModal .form input:focus,
+.modal-content .signinModal .form select:focus,
+.modal-content .signupModal .form input:focus,
+.modal-content .signupModal .form select:focus,
+.modal-content .createSessionModal .form input:focus,
+.modal-content .createSessionModal .form select:focus
+{
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.modal-content .signinModal .form select,
+.modal-content .signupModal .form select,
+.modal-content .createSessionModal .form select
+ {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('../assets/svg/dropdown.svg');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+}
+
+/* Disabled Create button state */
+/* .modal-content .signinModal .actions .action-btn:disabled {
+    opacity:  .6;
+    cursor: not-allowed;
+} */
+
+
+.modal-content .signinModal .action-btn,
+.modal-content .signupModal .action-btn,
+.modal-content .createSessionModal .action-btn,
+.modal-content .createSessionModal .save-btn {
+    background: #16A34A;
+    /* emerald */
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 26px;
+    text-align: center;
+}
+
+/* Responsive modal adjustments for small screens */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 96vw;
+        max-width: 96vw;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 8px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
+
+    .modal-close {
+        top: 10px;
+        right: 10px;
+        font-size: 22px;
+    }
+
+    /* Make action buttons full-width for easier tapping on phones */
+    .modal-content .signinModal .action-btn,
+    .modal-content .signupModal .action-btn,
+    .modal-content .createSessionModal .action-btn,
+    .modal-content .createSessionModal .save-btn {
+        width: 100%;
+        padding: 12px 16px;
+    }
+
+    /* Stack form fields and actions on small screens */
+    .modal-content .createSessionModal .form {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+    .modal-content .createSessionModal .actions {
+        /* width: 100%; */
+        /* display: flex; */
+        /* flex-direction: column-reverse; */
+        /* justify-content: space-between; */
+        /* gap: 8px;
+        margin-top: 12px; */
+    }
+
+    /* Collapse the signup grid into a single column */
+    .modal-content .signupModal .form {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+
+    .modal-content .signinModal h2,
+    .modal-content .signupModal h2 {
+        font-size: 22px;
+    }
+
+    .modal-overlay {
+        align-items: center; /* keep centered on phones */
+        padding: 8px 0;
+    }
+}
+
+.modal-content .signinModal .btn.btn-link {
+    color: #1B4332;
+    text-decoration: none;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.modal-content .signinModal .actions,
+.modal-content .signupModal .actions,
+.modal-content .createSessionModal .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+/* Sign-up form styles reuse the same look */
+.modal-content .signupModal h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1B4332;
+}
+
+.modal-content .createSessionModal .moreOptions-btn{
+    color: black;
+}
+
+/* 'Send a message' helper text under modal */
+.sendAMessage{
+    display:block;
+    margin-top:12px;
+    font-size:13px;
+    color:#4b4b4b;
+    text-align:center;
 }

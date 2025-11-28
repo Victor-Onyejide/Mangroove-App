@@ -1,0 +1,27 @@
+.app-footer{
+  background: #ffffff;
+  padding: 40px 16px;
+  border-top: 1px solid rgba(0,0,0,0.04);
+  color: #234731;
+}
+.footer-inner{ max-width:1100px; margin:0 auto; }
+.footer-top{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:18px; }
+.footer-logo{ display:flex; align-items:center; gap:12px; }
+.logo-mark{ width:46px; height:46px; border-radius:50%; background:#12B24B; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.brand-large{ color:#0aa147; font-weight:700; letter-spacing:0.08em; }
+.brand-small{ color:#0aa147; font-size:12px; margin-top:-4px; }
+.footer-links{ display:flex; gap:32px; align-items:center; }
+.footer-links a{ color:#234731; text-decoration:none; font-weight:600; letter-spacing:0.04em; }
+.footer-links a:hover{ text-decoration:underline; }
+.footer-social{ display:flex; gap:12px; align-items:center; }
+.social-icon{ display:inline-flex; width:34px; height:34px; border:1px solid rgba(0,0,0,0.06); border-radius:6px; align-items:center; justify-content:center; color:#0aa147; text-decoration:none; }
+.footer-bottom{ text-align:center; border-top:1px solid rgba(0,0,0,0.02); padding-top:18px; margin-top:8px; color:#47584a; }
+.copyright{ margin-bottom:8px; }
+.designed{ color:#0aa147; font-weight:700; }
+.designed .flower{ margin-left:6px; }
+
+@media (max-width: 700px){
+  .footer-top{ flex-direction:column; align-items:center; text-align:center; }
+  .footer-links{ gap:12px; margin:12px 0; flex-wrap:wrap; justify-content:center; }
+  .footer-social{ margin-top:8px; }
+}
