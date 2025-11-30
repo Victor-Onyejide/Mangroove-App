@@ -149,15 +149,15 @@ const handleShareLink = async () => {
       sseRef.current = null;
     }
     // For local development, use:
-    const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
-      withCredentials: true
-    });
-    sseRef.current = eventSource;
+    // const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
+    //   withCredentials: true
+    // });
+    // sseRef.current = eventSource;
 
     //For production (Heroku):
-    // const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`,{
-    //   withCredentials:true
-    // })
+    const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`,{
+      withCredentials:true
+    })
 
     eventSource.onopen = () => {
       console.log("EventSource connection opened.");
