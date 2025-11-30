@@ -4,6 +4,15 @@
    - Left and right are side-by-side; userprofile floats centered above them.
 */
 /* HERO SECTION STYLES */
+.html-overflow-fix,
+html, body {
+  /* Prevent accidental horizontal overflow from images or absolute elements
+     which can cause the whole page to break on small devices. This is a
+     defensive fallback; if you prefer to find the root cause we can remove
+     this after auditing. */
+  max-width: 100%;
+  overflow-x: hidden;
+}
 .herosection {
   position: relative;
   display: flex;
@@ -129,6 +138,26 @@
 
 .userprofile .card {
   margin: 0 auto;
+}
+
+/* Ensure hero images are responsive and cannot overflow the page */
+.userprofile .card-img,
+.herosection-right .split-avatar,
+.herosection-right .session-card img,
+.for-artists__visual img,
+.visual-card img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* Constrain avatar sizes used in split summary so they remain circular and responsive */
+.herosection-right .split-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Responsive: stack and make the profile flow inline on small screens */
@@ -836,8 +865,20 @@
   height: 100%;
   /* Use contain so the full image is visible (not overly zoomed). The card
      background will show in letterboxed areas; object-position centers image. */
-  object-fit: fit;
+  /* object-fit: fit is invalid; use cover/contain as appropriate. Default to
+     allowing the image to behave responsively and not overflow its container. */
+  object-fit: cover;
   object-position: center;
+  display: block;
+}
+
+/* Ensure protect images never overflow their container on small screens and
+   scale down responsively. On larger viewports we allow them to fill the
+   card height using object-fit: cover. */
+.protect-card img,
+.protect-card .image-cover {
+  max-width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -869,6 +910,13 @@
   .protect-card.log,
   .protect-card.jam {
     height: 280px;
+  }
+  /* On wider screens let images fill the card height while covering */
+  .protect-card img,
+  .protect-card .image-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 
@@ -933,6 +981,18 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Images used directly inside the protect grid (some markup uses a plain
+   <img class="proctect-img" />). Ensure these never overflow and scale
+   responsively on narrow viewports. */
+.proctect-img,
+.protect-grid > img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
 }
 
 .protect-feature {

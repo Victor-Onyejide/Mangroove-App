@@ -118,8 +118,9 @@
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, .06), 0 12px 40px rgba(0, 0, 0, .06);
-    /* allow popovers from row actions to be fully visible */
-    overflow: visible;
+    /* allow horizontal scrolling on small screens */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .sv2-row {
@@ -129,6 +130,8 @@
     align-items: center;
     padding: 14px 16px;
     border-top: 1px solid rgba(0, 0, 0, .06);
+    /* give each row a minimum width so the container can scroll horizontally when needed */
+    min-width: 820px;
 }
 
 .sv2-row:first-child {

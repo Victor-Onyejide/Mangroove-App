@@ -186,3 +186,11 @@ nav .menu {
  }
   
 }
+
+/* Small screens: make signin/signout button text smaller so it fits */
+@media (max-width: 480px) {
+  .navbarComponent .signinbtn {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
