@@ -56,12 +56,8 @@
   box-shadow: 0 4px 24px -4px rgba(16,24,40,0.08), 0 2px 8px -2px rgba(16,24,40,0.04);
   padding: 48px 56px 56px;
 }
-.splitsheet-header-grid {
-  /* display: grid;
-  grid-template-columns: 180px 1fr 160px;
-  gap: 48px;
-  align-items: start;
-  margin-bottom: 40px; */
+.splitsheet-header-grid { /* reserved for future grid layout; keep non-empty to satisfy linter */
+  display: block;
 }
 .cover-wrapper {
     display: flex;
@@ -103,17 +99,19 @@
   font-weight:500;
   margin-top: 4px;
 }
-.splitsheet-table-wrapper { margin-top: 8px; }
+.splitsheet-table-wrapper { margin-top: 8px; overflow-x: auto; }
 .splitsheet-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
+  table-layout: fixed; /* prevent overflow by fixing layout */
 }
 .splitsheet-table thead tr { background:#f0f3f5; }
 .splitsheet-table th, .splitsheet-table td {
   padding: 12px 10px;
   border: 1px solid #e2e6ea;
   vertical-align: top;
+  word-break: break-word; /* wrap long content */
 }
 .splitsheet-table th { font-weight:600; color:#444; }
 .splitsheet-writer-cell {
@@ -150,4 +148,13 @@
   .splitsheet-header-grid { grid-template-columns: 1fr; }
   .splitsheet-cover { width:140px; height:140px; }
   .splitsheet-card { padding:32px 28px 40px; }
+  .splitsheet-table { font-size: 11px; }
+  .splitsheet-table th, .splitsheet-table td { padding: 10px 8px; }
+  /* On tablet/mobile, show only avatar for writers to keep table compact */
+  .splitsheet-writer-cell {
+    justify-content: center;
+  }
+  .writer-info {
+    display: none;
+  }
 }

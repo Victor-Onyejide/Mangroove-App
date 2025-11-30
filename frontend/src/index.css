@@ -29,10 +29,6 @@ hr {
   /* removed z-index to avoid creating a stacking context that can
     interfere with the navbar's stacking; the navbar itself controls z-index */
 }
-nav {
-  position: fixed;
-  top: 0;
-}
 
 /* Reserve space for the fixed navbar so page content doesn't sit under it. Adjust if you change nav height. */
 .App {
@@ -60,7 +56,7 @@ nav {
 .links.active {
   display: flex;
 } */
-nav a:hover{
+.navbarComponent a:hover{
   background-color: #ebebeb;
 }
 /* nav .menu {
@@ -216,4 +212,9 @@ button{
 }
 
 @media (max-width:950px) {
+}
+
+/* Ensure Toastify toasts render above fixed navbar */
+.Toastify__toast-container {
+  z-index: 1000001 !important;
 }

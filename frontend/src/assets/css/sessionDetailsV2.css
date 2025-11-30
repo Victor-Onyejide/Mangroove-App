@@ -95,6 +95,23 @@
     color: #475569;
     margin: 0;
     width: 50%;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* Align fact rows and size icons */
+.sdv2-details .facts li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sdv2-details .icon svg,
+.sdv2-details .icon img {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
 }
 
 .sdv2-splits h3,
@@ -267,6 +284,22 @@
     background: transparent;
     border-color: #CBD5E1;
     color: #334155;
+}
+
+/* Size icons inside buttons (Copy/Share) */
+.btn img {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+}
+
+/* Icon-only actions (Copy/Share) without button styling */
+.sdv2-hero .hero-right .icon-action {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 .mono {

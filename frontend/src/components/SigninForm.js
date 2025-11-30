@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../features/userSlice';
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { toast } from 'react-toastify';
 import '../assets/css/singupmodal.css';
@@ -9,7 +9,9 @@ import '../assets/css/singupmodal.css';
 // Reusable login form used by the HomePage sign-in modal
 export default function SigninForm({ onSuccess, onRequestSignUp }) {
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.user);
+  const { loading, userInfo, shareLink, sessionId } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,10 +36,27 @@ export default function SigninForm({ onSuccess, onRequestSignUp }) {
     }
   };
 
+  // After login, redirect based on session join state (mirror LoginPage behavior)
+  useEffect(() => {
+    if (userInfo) {
+      if (shareLink && sessionId) {
+        navigate(`/accept/${sessionId}`);
+      } else {
+        const params = new URLSearchParams(location.search);
+        const redirect = params.get('redirect');
+        if (redirect) {
+          navigate(decodeURIComponent(redirect), { replace: true });
+        } else {
+          navigate('/sessions-v2');
+        }
+      }
+    }
+  }, [userInfo, shareLink, sessionId, navigate, location.search]);
+
   return (
     <div className="signinModal">
       <h2 className="text-center mb-2">Sign in</h2>
-      <p className="text-center mb-4" style={{ color: '#666' }}>Use your Mangroove Account</p>
+      <p className="text-center mb-4" style={{ color: '#4b5563', fontSize: 14 }}>Use your Mangroove Account</p>
       <div className="form">
         <input
           className="email mt-3"
@@ -57,7 +76,7 @@ export default function SigninForm({ onSuccess, onRequestSignUp }) {
           required
         />
 
-        <label className="showpass-row">
+        <label className="showpass-row" style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, fontSize: 13 }}>
           <input
             type="checkbox"
             checked={showPassword}

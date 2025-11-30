@@ -43,8 +43,9 @@ export default function SplitSheetPage() {
     doc.text(`Song Creation Date: ${fmtLong(session.createdAt)}`, marginLeft, y); y += 24;
 
   // Table header (expanded ownership into separate Writing/Publishing columns)
-  const headers = ['Details', 'Affiliation', 'Publisher', 'Role', 'Writing %', 'Publishing %'];
-  const colWidths = [160, 90, 120, 110, 70, 70];
+  // Adjusted column widths to fit within page width (A4 pt width ~595, usable ~555 with 40pt margin)
+  const headers = ['Details', 'Affiliation', 'Publisher', 'Role', 'Writing', 'Publishing'];
+  const colWidths = [150, 80, 110, 90, 60, 60];
     let x = marginLeft;
     doc.setFont('Helvetica', 'bold');
     headers.forEach((h, i) => {
@@ -80,12 +81,12 @@ export default function SplitSheetPage() {
         innerY += lineHeight;
       });
       // Other columns
-      let colStart = marginLeft + colWidths[0];
-      doc.text(String(w?.affiliation || ''), colStart + 4, y); colStart += colWidths[1];
-      doc.text(String(w?.publisher || ''), colStart + 4, y); colStart += colWidths[2];
-  doc.text(String(w?.role || ''), colStart + 4, y); colStart += colWidths[3];
-  doc.text(`${writingPct}%`, colStart + 4, y); colStart += colWidths[4];
-  doc.text(`${publishingPct}%`, colStart + 4, y);
+    let colStart = marginLeft + colWidths[0];
+    doc.text(String(w?.affiliation || ''), colStart + 4, y); colStart += colWidths[1];
+    doc.text(String(w?.publisher || ''), colStart + 4, y); colStart += colWidths[2];
+    doc.text(String(w?.role || ''), colStart + 4, y); colStart += colWidths[3];
+    doc.text(`${writingPct}%`, colStart + 4, y); colStart += colWidths[4];
+    doc.text(`${publishingPct}%`, colStart + 4, y);
       y += rowHeight;
       if (y > 760) { doc.addPage(); y = 48; }
     });
@@ -165,8 +166,8 @@ export default function SplitSheetPage() {
                 <th>Affiliation</th>
                 <th>Publisher</th>
                 <th>Role</th>
-                <th>Writing %</th>
-                <th>Publishing %</th>
+                <th>Writing</th>
+                <th>Publishing</th>
               </tr>
             </thead>
             <tbody>

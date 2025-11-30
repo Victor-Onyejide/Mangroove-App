@@ -1,0 +1,74 @@
+/* Privacy page styling: Bootstrap-like typography and spacing */
+.policy-page {
+  padding: 48px 16px;
+  background: #ffffff;
+}
+
+.policy-container {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.policy-updated {
+  color: #6c757d;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.policy-title {
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  margin: 10px 0 24px;
+}
+
+.policy-lead {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #343a40;
+  margin-top: 24px;
+}
+
+.policy-section {
+  margin-top: 28px;
+}
+
+.policy-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #212529;
+}
+
+.policy-section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 18px 0 8px;
+  color: #212529;
+}
+
+.policy-section p,
+.policy-section li {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #343a40;
+}
+
+.policy-section ul {
+  padding-left: 1.25rem;
+}
+
+.policy-section a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.policy-section a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 700px) {
+  .policy-title { font-size: 1.875rem; }
+  .policy-section h2 { font-size: 1.375rem; }
+}

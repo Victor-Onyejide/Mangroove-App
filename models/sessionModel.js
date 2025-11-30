@@ -5,7 +5,11 @@ const sessionSchema = new Schema({
     creator: {type: Schema.Types.ObjectId, ref:'User', required: true},
     songTitle:{type:String, required:true},
     sessionType:{type:String, required:true},
-    songwriters:[{ type: Schema.Types.ObjectId, ref: 'User' }],
+    // Store both the user reference and a denormalized username for fast display
+    songwriters:[{
+        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        username: { type: String }
+    }],
     joinLink: {type:String, unique:true},
     linkExpiresAt: {type:Date},
     createdAt: {type:Date, default:Date.now},

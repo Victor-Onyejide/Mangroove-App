@@ -5,11 +5,18 @@ import { fetchSession } from '../features/sessionSlice';
 import axios from 'axios';
 import QRCode from 'react-qr-code';
 import '../assets/css/sessionDetailsV2.css';
-// import { setSessionId, setShareLink } from '../features/userSlice';
+import { setSessionId, setShareLink } from '../features/userSlice';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { toast } from 'react-toastify';
 import OwnershipForm from '../components/OwnershipForm';
 import Modal from '../components/Modal';
+import locationIcon from '../assets/svg/location.svg';
+import recordingIcon from '../assets/svg/recording.svg';
+import summerIcon from '../assets/svg/summer.svg';
+// Placeholder for studio until studio.svg is added; using file.svg for now
+import studioIcon from '../assets/svg/studio.svg';
+import copyIcon from '../assets/svg/copy.svg';
+import shareIcon from '../assets/svg/share.svg';
 
 export default function SessionDetailsV2() {
   const { id: sessionId } = useParams();
@@ -45,35 +52,66 @@ export default function SessionDetailsV2() {
   };
 const handleEndSession = async () => {
   try {
+    // Correct endpoint for ending a session
     await axios.post(
-      `/api/user/split-sheet/${sessionId}/end`,
+      `/api/user/session/${sessionId}/end`,
       {},
       { withCredentials: true }
     );
-    navigate(`/split/${sessionId}`);
-    toast.success("Session ended for all users.")
+    toast.success("Session ended for all users.");
+    // Navigate to existing split sheet route
+    navigate(`/split-sheet/${sessionId}`);
   } catch (error) {
-    toast.error("Failed to end session.")    
+    toast.error("Failed to end session.");
   }
 }
 
 const handleCopyLink= () => {
-
+  // Persist accept intent for post-auth redirects
+  if (sessionId) {
+    dispatch(setSessionId(sessionId));
+    dispatch(setShareLink(true));
+  }
   navigator.clipboard.writeText(sessionLink)
     .then(() => toast.success('Copied!'))
-    .catch((err) => toast.error('Failed to copy'))
+    .catch(() => toast.error('Failed to copy'))
 }
 // This coul
-const handleShareLink = () => {
-  if(navigator.share) {
-    navigator.share({
-      title: 'Join this session!',
-      text: `${session.song_title}`,
-      url: sessionLink
-    });
+const handleShareLink = async () => {
+  // Persist accept intent for post-auth redirects
+  if (sessionId) {
+    dispatch(setSessionId(sessionId));
+    dispatch(setShareLink(true));
   }
-
-}
+  // Prefer Web Share API; gracefully ignore user cancellation (AbortError)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Join this session!',
+        text: session?.songTitle || 'Session invite',
+        url: sessionLink
+      });
+      // Optional success feedback (can be noisy, so kept subtle)
+      toast.info('Share dialog opened');
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        // User dismissed the share sheet; silently ignore.
+        return;
+      }
+      console.error('Share failed:', err);
+      toast.error('Unable to share link');
+    }
+    return;
+  }
+  // Fallback: copy to clipboard
+  try {
+    await navigator.clipboard.writeText(sessionLink);
+    toast.success('Link copied to clipboard');
+  } catch (err) {
+    console.error('Copy failed:', err);
+    toast.error('Failed to copy link');
+  }
+};
 // On load, load fetch sessions
     // TODO
     // Update to check that it has ended and not allow the user to join again
@@ -103,7 +141,8 @@ const handleShareLink = () => {
   // }, [loading, session, isLoggedIn, userId, navigate, sessionId])
 
   useEffect (() =>{
-    if(!isLoggedIn || loading || !sessionId) return;
+    // Subscribe to SSE for this session for any viewer on the page (auth or not)
+    if(loading || !sessionId) return;
 
     if(sseRef.current){
       sseRef.current.close();
@@ -124,7 +163,17 @@ const handleShareLink = () => {
       console.log("EventSource connection opened.");
     };
 
-    eventSource.onmessage = () => {
+    eventSource.onmessage = (e) => {
+      // Parse SSE payload to detect session end without waiting for refetch
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload?.ended === true || payload?.isEnded === true || payload?.session?.isEnded === true) {
+          navigate(`/split-sheet/${sessionId}`);
+          return; // Skip refetch; we know it's ended
+        }
+      } catch (_) {
+        // Non-JSON payload; ignore and fall back to refetch
+      }
       dispatch(fetchSession(sessionId));
     }
 
@@ -137,21 +186,26 @@ const handleShareLink = () => {
       console.log("Closing EventSource for session:", sessionId);
       eventSource.close();
     }
-  }, [dispatch, sessionId, isLoggedIn, loading]);
+  }, [dispatch, sessionId, loading, navigate]);
 
+  // Redirect now handled directly inside the SSE onmessage handler when an 'ended' flag is received.
 
 
   const contributors = useMemo(() => {
     const sw = Array.isArray(session?.songwriters) ? session.songwriters : [];
     const own = Array.isArray(session?.ownership) ? session.ownership : [];
     return sw.map((w) => {
-      const id = w?._id || w?.id || w;
+      // Support new schema { user, username } with optional populated user object
+      const userObj = w && typeof w === 'object' && 'user' in w ? w.user : w;
+      const id = (userObj && typeof userObj === 'object' && (userObj._id || userObj.id)) || w?._id || w?.id || w;
       const o = own.find((x) => String(x.songwriter) === String(id));
       const pct = o ? (o.writing ?? o.publishing ?? 0) : 0;
+      const name = (userObj && typeof userObj === 'object' && (userObj.username || userObj.stageName || userObj.email)) || w?.username || 'User';
+      const role = (userObj && typeof userObj === 'object' && userObj.role) || w?.role || '';
       return {
         id,
-        name: w?.username || w?.stageName || 'User',
-        role: w?.role || '',
+        name,
+        role,
         pct,
       };
     });
@@ -202,22 +256,51 @@ const handleShareLink = () => {
                 <div className="join-copy">Join at <strong>mangrovestudios.org</strong></div>
                 <div className="with-id">with Session ID</div>
                 <div className="session-code">{idShort}</div>
-                <button className="btn btn-success" onClick={handleCopyLink}>Copy</button>
-                <button className="btn btn-success" onClick={handleShareLink}>Share</button>
-                <button className="btn btn-danger" onClick={handleEndSession}>End Session</button>
+                <img
+                  src={copyIcon}
+                  alt="Copy link"
+                  className="icon-action"
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleCopyLink}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCopyLink(); }}
+                />
+                <img
+                  src={shareIcon}
+                  alt="Share link"
+                  className="icon-action"
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleShareLink}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleShareLink(); }}
+                />
+                { session?.creator == userId &&
+
+                <button
+                  className="btn btn-danger"
+                  onClick={handleEndSession}
+                  // disabled={String(session?.creator) !== String(userId)}
+                  title={String(session?.creator) !== String(userId) ? 'Only the session creator can end the session' : ''}
+                >
+                  End Session
+                </button>
+                }
+
               </div>
             </div>
           </section>
 
           <section className="sdv2-details">
             <ul className="facts">
-              <li><span className="icon">🎙️</span><span>Studio</span></li>
-              <li><span className="icon">📍</span><span>Mangrove Studios, Toronto, ON</span></li>
-              <li><span className="icon">💿</span><span>Summer Vibes Compilation</span></li>
+              <li><span className="icon"><img src={studioIcon} alt="Studio" /></span><span>Studio</span></li>
+              <li><span className="icon"><img src={locationIcon} alt="Location" /></span><span>Mangrove Studios, Toronto, ON</span></li>
+              <li><span className="icon"><img src={summerIcon} alt="Summer" /></span><span>Summer Vibes Compilation</span></li>
             </ul>
             <p className="desc">
-                Recording vocals for the lead single, Danz, collaborating with local artists, 
-                and experimenting with new soundscapes.</p>
+              <span className="icon"><img src={recordingIcon} alt="Recording" /></span>
+              Recording vocals for the lead single, Danz, collaborating with local artists,
+              and experimenting with new soundscapes.
+            </p>
           </section>
 
           <section className="sdv2-splits">

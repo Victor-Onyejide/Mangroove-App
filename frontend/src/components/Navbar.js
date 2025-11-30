@@ -1,14 +1,28 @@
-import { Link } from "react-router-dom";
-// import logo from '../assets/svg/logo.svg';
+import { Link, useLocation } from "react-router-dom";
+import logo from '../assets/svg/logo.png';
 import React from "react";
 import '../assets/css/navbar.css';
 
 export default function Navbar({ onSignInClick, userInfo, onLogout }){
     const [menuOpen, setMenuOpen] = React.useState(false);
-    
+    const location = useLocation();
+
     const toggle = () => {
         setMenuOpen(!menuOpen);
-    };  
+    };
+
+    const handleNavClick = (hash) => {
+        if (location.pathname === "/") {
+            // On home page already: scroll to section
+            const el = document.querySelector(hash);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            // Navigate to home with hash; HomePage sections already have matching ids
+            window.location.href = `/${hash}`.replace('//', '/');
+        }
+    };
     return(
         <nav className="navbarComponent">
             <div className="logowrapper">
@@ -19,7 +33,7 @@ export default function Navbar({ onSignInClick, userInfo, onLogout }){
                 </div>
 
                 <Link to="/" className="link p-5 logotxtwrapper">
-                {/* <img src={logo} alt="Mangroove logo" className="logo" /> */}
+                <img src={logo} alt="Mangroove logo" className="logo" />
                 <div className="logolinetxt">
                     <span className="logotxt-bld">MANGROVE</span>
                     <span className="logotxt-sm">STUDIOS</span>
@@ -28,9 +42,9 @@ export default function Navbar({ onSignInClick, userInfo, onLogout }){
             </div>
 
             <div className="navigation">
-                <Link className="link" to="#about">ABOUT</Link>
-                <Link className="link" to="#features">FEATURES</Link>
-                <Link className="link">PRICING</Link>
+                <button className="link as-button" type="button" onClick={() => handleNavClick('#about')}>ABOUT</button>
+                <button className="link as-button" type="button" onClick={() => handleNavClick('#features')}>FEATURES</button>
+                <button className="link as-button" type="button" onClick={() => handleNavClick('#pricing')}>PRICING</button>
             </div>
 
                                 {userInfo ? (

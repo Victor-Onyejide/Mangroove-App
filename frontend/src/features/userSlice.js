@@ -1,11 +1,21 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+// Hydrate persisted user info (basic session persistence for page refresh)
+const persistedUserInfo = (() => {
+    try {
+        const raw = localStorage.getItem('userInfo');
+        return raw ? JSON.parse(raw) : null;
+    } catch (_) {
+        return null;
+    }
+})();
+
 const initialState = {
-    isLoggedIn: false,
-    userType: '',
+    isLoggedIn: !!persistedUserInfo,
+    userType: persistedUserInfo ? 'user' : '',
     sessionId: null,
-    userInfo: null,
+    userInfo: persistedUserInfo,
     shareLink: false,
     // Tracks an explicit logout event so UI can distinguish "logged out via action"
     isLoggedOut: false,
@@ -117,6 +127,7 @@ const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.isLoggedOut = false;
                 state.userInfo = action.payload; // Populate userInfo with the signed-up user data
+                try { localStorage.setItem('userInfo', JSON.stringify(action.payload)); } catch (_) {}
             })
             .addCase(signUpUser.rejected, (state, action) => {
                 state.loading = false;
@@ -133,6 +144,7 @@ const userSlice = createSlice({
                 state.isLoggedOut = false;
                 state.userType = 'user';
                 state.userInfo = action.payload;
+                try { localStorage.setItem('userInfo', JSON.stringify(action.payload)); } catch (_) {}
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
@@ -147,13 +159,18 @@ const userSlice = createSlice({
                 state.isLoggedIn = true;
                 state.isLoggedOut = false;
                 state.userInfo = action.payload;
+                try { localStorage.setItem('userInfo', JSON.stringify(action.payload)); } catch (_) {}
             })
             .addCase(getCurrentUser.rejected, (state, action) => {
                 state.loading = false;
-                state.isLoggedIn = false;
-                // keep isLoggedOut as-is here; rejection can be due to expired session, not explicit logout
-                state.userInfo = null; // Clear userInfo if the user is not logged in
-                state.error = action.payload; 
+                // If we still have a persisted user, keep them "soft logged in" until an action explicitly logs out
+                if (state.userInfo) {
+                    state.isLoggedIn = true; // optimistic; backend cookie may have expired
+                } else {
+                    state.isLoggedIn = false;
+                    state.userInfo = null;
+                }
+                state.error = action.payload;
             })
 
             // Logout Thunk
@@ -171,6 +188,7 @@ const userSlice = createSlice({
                 state.isLoggedOut = true;
                 // Clear local storage, including Initials
                 localStorage.removeItem('Initials');
+                localStorage.removeItem('userInfo');
             })
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;

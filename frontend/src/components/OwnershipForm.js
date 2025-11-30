@@ -2,78 +2,111 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateOwnership, fetchSession } from '../features/sessionSlice';
 
-
-const OwnershipForm = ({ sessionId, songwriters, onClose }) => {
+// Ownership / Song Splits form styled to match other modal forms
+// Important: we derive songwriter IDs the same way SessionDetailsV2 does when
+// building contributors, so ownership lookup by songwriter id works reliably
+// across legacy sessions and the new { user, username } schema.
+const OwnershipForm = ({ sessionId, songwriters = [], onClose }) => {
     const [ownership, setOwnership] = useState(
-                songwriters.map(songwriter => ({ songwriter: songwriter._id, writing: '', publishing: '' }))
-        );
-        const dispatch = useDispatch();
+        Array.isArray(songwriters)
+            ? songwriters.map((songwriter) => {
+                  // Mirror contributors' id resolution logic
+                  const userObj =
+                      songwriter && typeof songwriter === 'object' && 'user' in songwriter
+                          ? songwriter.user
+                          : songwriter;
+                  const id =
+                      (userObj && typeof userObj === 'object' && (userObj._id || userObj.id)) ||
+                      songwriter?._id ||
+                      songwriter?.id ||
+                      songwriter;
+                  return { songwriter: id, writing: '', publishing: '' };
+              })
+            : []
+    );
+    const dispatch = useDispatch();
 
-        const handleChange = (index, field, value) => {
-                const updatedOwnership = [...ownership];
-                updatedOwnership[index][field] = value;
-                setOwnership(updatedOwnership);
-        };
+    const handleChange = (index, field, value) => {
+        const updatedOwnership = [...ownership];
+        updatedOwnership[index][field] = value;
+        setOwnership(updatedOwnership);
+    };
 
     const handleSubmit = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
         try {
-            // use unwrap to throw on rejected action
-            const result = await dispatch(updateOwnership({ sessionId, ownership })).unwrap();
-            // Re-fetch the session so we get the populated songwriter objects (server may return ids)
+            await dispatch(updateOwnership({ sessionId, ownership })).unwrap();
             try {
                 await dispatch(fetchSession(sessionId)).unwrap();
             } catch (fetchErr) {
                 console.error('OwnershipForm: fetchSession error after update', fetchErr);
             }
-            if (onClose) {
-                onClose();
-            }
+            onClose && onClose();
         } catch (err) {
             console.error('OwnershipForm: updateOwnership error', err);
         }
     };
 
-        return (
-                <form onSubmit={handleSubmit}>
-                    <h2>Enter Songwriter Ownership </h2>
-                    {ownership.map((entry, index) => (
-                        <div key={entry.songwriter} style={{ display: 'flex',  flexDirection: 'column',gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
-                            <input
-                                type="text"
-                                placeholder="Songwriter Name"
-                                value={songwriters.find(sw => sw._id === entry.songwriter).username}
-                                readOnly
-                                style={{ flex: 1, minWidth: '180px' }}
-                            />
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <input
-                                    type="number"
-                                    placeholder="Writing %"
-                                    value={entry.writing}
-                                    onChange={(e) => handleChange(index, 'writing', e.target.value)}
-                                    min="0"
-                                    max="100"
-                                    style={{ width: '160px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="Publishing %"
-                                    value={entry.publishing}
-                                    onChange={(e) => handleChange(index, 'publishing', e.target.value)}
-                                    min="0"
-                                    max="100"
-                                    style={{ width: '160px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
-                                />
+    return (
+        <div className="ownershipModal">
+            <h2>Song Splits</h2>
+            <p className="helper">Assign writing & publishing percentages to each songwriter.</p>
+            <form className="form ownership-form" onSubmit={handleSubmit}>
+                {ownership.map((entry, index) => {
+                    const sw =
+                        songwriters.find((s) => {
+                            const userObj =
+                                s && typeof s === 'object' && 'user' in s ? s.user : s;
+                            const id =
+                                (userObj && typeof userObj === 'object' && (userObj._id || userObj.id)) ||
+                                s?._id ||
+                                s?.id ||
+                                s;
+                            return String(id) === String(entry.songwriter);
+                        }) || {};
+                    return (
+                        <div key={entry.songwriter} className="ownership-row">
+                            <div className="row-head">
+                                <div className="songwriter-name">{sw.username || sw.stageName || 'Songwriter'}</div>
+                            </div>
+                            <div className="pct-pair">
+                                <div className="field">
+                                    <label className="field-label" htmlFor={`writing-${entry.songwriter}`}>Writing %</label>
+                                    <input
+                                        id={`writing-${entry.songwriter}`}
+                                        type="number"
+                                        inputMode="numeric"
+                                        placeholder="0"
+                                        value={entry.writing}
+                                        onChange={(e) => handleChange(index, 'writing', e.target.value)}
+                                        min="0"
+                                        max="100"
+                                    />
+                                </div>
+                                <div className="field">
+                                    <label className="field-label" htmlFor={`publishing-${entry.songwriter}`}>Publishing %</label>
+                                    <input
+                                        id={`publishing-${entry.songwriter}`}
+                                        type="number"
+                                        inputMode="numeric"
+                                        placeholder="0"
+                                        value={entry.publishing}
+                                        onChange={(e) => handleChange(index, 'publishing', e.target.value)}
+                                        min="0"
+                                        max="100"
+                                    />
+                                </div>
                             </div>
                         </div>
-                    ))}
-                    <button type="button" onClick={handleSubmit} style={{ padding: '8px 16px', borderRadius: '6px', background: '#029e5c', color: '#fff', border: 'none', fontWeight: 'bold' }}>
-                        Update Ownership
-                    </button>
-                </form>
-        );
-        // Publishing, Writing
+                    );
+                })}
+                <div className="actions">
+                    <button type="button" className="cancel-btn" onClick={onClose}>Cancel</button>
+                    <button type="submit" className="action-btn">Update Ownership</button>
+                </div>
+            </form>
+        </div>
+    );
 };
 
 export default OwnershipForm;

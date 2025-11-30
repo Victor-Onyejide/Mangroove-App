@@ -27,6 +27,8 @@ import Modal from './components/Modal';
 import SigninForm from './components/SigninForm';
 import SignupForm from './components/SignupForm';
 import Footer from './components/Footer';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 
 function App() {
@@ -41,6 +43,8 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
+  // Track completion of initial auth check to avoid premature sign-in modal
+  const [authChecked, setAuthChecked] = useState(false);
   
   const toggle = () => {
     setMenuOpen((prev) => !prev); // <-- This toggles the menuOpen state
@@ -62,23 +66,23 @@ function App() {
 
 
 useEffect(() => {
-  dispatch(getCurrentUser());
+  // Perform initial auth check; mark when finished regardless of outcome
+  dispatch(getCurrentUser()).finally(() => setAuthChecked(true));
 }, [dispatch]);
 
 useEffect(() => {
-  // Avoid redirect flicker while checking session, and allow public home route
-  if (loading) return;
-  const publicPaths = ['/', '/login', '/signup'];
+  // Wait until initial auth check completes to decide about sign-in modal
+  if (loading || !authChecked) return;
+  const publicPaths = ['/', '/login', '/signup', '/terms', '/privacy'];
   const currentPath = location.pathname;
   if (!isLoggedIn && !publicPaths.includes(currentPath)) {
-    const redirectTo = `${location.pathname}${location.search || ''}`;
-    navigate(`/login?redirect=${encodeURIComponent(redirectTo)}`, { replace: true });
+    setLoginOpen(true);
   }
-}, [isLoggedIn, loading, navigate, location]);
+}, [isLoggedIn, loading, authChecked, location]);
 
   return (
-    <div>
-      <ToastContainer position="top-right" autoClose={3000} />
+    <div className="app-shell">
+      <ToastContainer position="top-right" autoClose={3000} containerStyle={{ zIndex: 1000001 }} />
       <div className="navContainer mb-5">
         <Navbar
           onSignInClick={() => setLoginOpen(true)}
@@ -120,26 +124,26 @@ useEffect(() => {
         </Modal>
       )}
 
-      <div className="App">
-          <Routes>
-            <Route path="/" element={<HomePage/>}/>
-            {/* <Route path="/" element={<LoginPage/>}/> */}
-            <Route path="/login" element={<LoginPage/>}/>
-            <Route path="/signup" element={<SignUpPage/>}/>
-            <Route path="/sessions" element={<AllSessionsPage/>}/>
-            <Route path="/sessions-v2" element={<AllSessionsV2/>}/>
-            <Route path="/session/:id" element={<SessionsPage/>}/>
-            <Route path="/session-v2/:id" element={<SessionDetailsV2 />}/>
-            <Route path="/split-sheet/:id" element={<SplitSheetPage />}/>
-            <Route path="/qrcode/:id" element={<QrCode />}/>
-            <Route path="/guest" element={<GuestPage/>}/>
-            <Route path="/joined/:id" element={<JoinedSession/>}/>
-            <Route path="/accept/:id" element={<AcceptPage/>}/>
-            <Route path="/session/:id/edit" element={<SessionsEditPage/>}/>
-          </Routes>
+      <main className="app-main">
+        <Routes>
+          <Route path="/" element={<HomePage/>}/>
+          <Route path="/login" element={<LoginPage/>}/>
+          <Route path="/signup" element={<SignUpPage/>}/>
+          <Route path="/sessions" element={<AllSessionsPage/>}/>
+          <Route path="/sessions-v2" element={<AllSessionsV2/>}/>
+          <Route path="/session/:id" element={<SessionsPage/>}/>
+          <Route path="/session-v2/:id" element={<SessionDetailsV2 />}/>
+          <Route path="/split-sheet/:id" element={<SplitSheetPage />}/>
+          <Route path="/qrcode/:id" element={<QrCode />}/>
+          <Route path="/guest" element={<GuestPage/>}/>
+          <Route path="/joined/:id" element={<JoinedSession/>}/>
+          <Route path="/accept/:id" element={<AcceptPage/>}/>
+          <Route path="/session/:id/edit" element={<SessionsEditPage/>}/>
+          <Route path="/terms" element={<TermsPage/>}/>
+          <Route path="/privacy" element={<PrivacyPage/>}/>
+        </Routes>
+      </main>
       <Footer />
-      </div>
-
     </div>
   );
 }

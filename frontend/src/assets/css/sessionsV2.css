@@ -118,7 +118,8 @@
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 1px 0 rgba(0, 0, 0, .06), 0 12px 40px rgba(0, 0, 0, .06);
-    overflow: hidden;
+    /* allow popovers from row actions to be fully visible */
+    overflow: visible;
 }
 
 .sv2-row {
@@ -209,17 +210,76 @@
 .session-action-wrapper{
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: flex-end;
     align-items: center;
+    gap: 10px; /* space between Create and Join buttons on laptop */
 }
+/* Make header controls line up nicely on smaller screens */
+@media (max-width: 900px) {
+    .sv2-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sv2-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    /* Search full width */
+    .sv2-search-wrap {
+        width: 100%;
+    }
+
+    .sv2-search-wrap input {
+        width: 100%;
+    }
+
+    /* Filter dropdown full width, aligned with search */
+    .sv2-filter select {
+        width: 100%;
+    }
+
+    /* Buttons stacked, same width as dropdown */
+    .session-action-wrapper {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .botton-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .botton-wrapper .btn {
+        /* width: 100%; */
+        text-align: center;
+    }
+}
+@media (max-width: 1024px) {
+    /* Tablet: slightly smaller buttons */
+    .btn.primary,
+    .btn.hollow {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
 @media (max-width: 800px) {
-.session-action-wrapper{
-    flex-direction: column;
-}
+    .session-action-wrapper{
+            flex-direction: column;
+    }
 
-.btn .hollow ,
-.btn .primary{
-    font-size:10px;
-}
-
+    /* Phone: even smaller, more compact buttons */
+    .btn.primary,
+    .btn.hollow {
+        padding: 7px 10px;
+        font-size: 12px;
+    }
 }

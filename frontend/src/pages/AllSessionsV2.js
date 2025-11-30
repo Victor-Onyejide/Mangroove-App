@@ -16,20 +16,47 @@ export default function AllSessionsV2() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [sessionType, setSessionType] = useState('');
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10; // number of sessions per page
+
+  // Close the three-dots delete menu when clicking anywhere outside it
+  useEffect(() => {
+    if (!menuOpenId) return;
+
+    const handleClickOutside = () => {
+      setMenuOpenId(null);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [menuOpenId]);
 
   useEffect(() => {
+    // Defer loading until auth is resolved and user is logged in.
+    if (loading || !isLoggedIn) return;
     const load = async () => {
       try {
         const { data } = await axios.get('/api/user/sessions', { withCredentials: true });
         setSessionsCreated(data.created || []);
         setSessionsJoined(data.joined || []);
+        console.log(data)
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Failed loading sessions', err);
+        // If the cookie isn't ready yet, retry once shortly after.
+        setTimeout(async () => {
+          try {
+            const { data } = await axios.get('/api/user/sessions', { withCredentials: true });
+            setSessionsCreated(data.created || []);
+            setSessionsJoined(data.joined || []);
+          } catch (err2) {
+            // eslint-disable-next-line no-console
+            console.error('Failed loading sessions (retry)', err2);
+          }
+        }, 400);
       }
     };
     load();
-  }, []);
+  }, [isLoggedIn, loading]);
 
   const list = useMemo(() => {
     const created = Array.isArray(sessionsCreated) ? sessionsCreated : [];
@@ -47,24 +74,49 @@ export default function AllSessionsV2() {
       const q = query.trim().toLowerCase();
       merged = merged.filter(s => (s.songTitle || '').toLowerCase().includes(q));
     }
+    // Sort by most recent first: prefer updatedAt, fallback to createdAt
+    merged.sort((a, b) => {
+      const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return bTime - aTime;
+    });
     return merged;
   }, [sessionsCreated, sessionsJoined, query, filter]);
 
+  // Derived pagination values
+  const totalPages = Math.max(1, Math.ceil(list.length / pageSize));
+  const startIdx = (currentPage - 1) * pageSize;
+  const endIdx = startIdx + pageSize;
+  const pageList = list.slice(startIdx, endIdx);
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/user/session/${id}`, { withCredentials: true });
+      setSessionsCreated(prev => prev.filter(s => String(s._id) !== String(id)));
+      setSessionsJoined(prev => prev.filter(s => String(s._id) !== String(id)));
+      setMenuOpenId(null);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('delete session failed', err);
+    }
+  };
+
   const handleCreate = async () => {
     if (!newTitle.trim() || !sessionType) return;
-   try {
-        const payload = {
-            songTitle: newTitle.trim(),
-            sessionType: sessionType   
-        }
-        const { data } = await axios.post(
-            '/api/user/create-session', 
-            payload, 
-            { withCredentials: true }
-        );
-        setCreateOpen(false);
-        setNewTitle('');
-        navigate(`/session-v2/${data.session._id}`);
+    try {
+      const payload = {
+        songTitle: newTitle.trim(),
+        sessionType: sessionType
+      };
+      const { data } = await axios.post(
+        '/api/user/create-session',
+        payload,
+        { withCredentials: true }
+      );
+      setCreateOpen(false);
+      setNewTitle('');
+      // Newly created sessions start as in progress (isEnded false by default)
+      navigate(`/session-v2/${data.session._id}`);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('create session failed', err);
@@ -112,19 +164,35 @@ export default function AllSessionsV2() {
           <div>Status</div>
           <div />
         </div>
-        {list.map((s) => {
+  {pageList.map((s) => {
           const id = s._id || s.id || '';
           const lastViewed = s.updatedAt || s.createdAt || '';
           const dateStr = lastViewed ? new Date(lastViewed).toLocaleDateString(undefined, { month: 'short', day: '2-digit', year: 'numeric' }) : '—';
+          // Support both populated users and denormalized songwriter subdocs
           const contributors = Array.isArray(s.songwriters) ? s.songwriters : [];
           const names = contributors
-            .map(w => (typeof w === 'object' ? (w.username || w.stageName || 'User') : String(w)))
+            .map(sw => {
+              // case 1: new schema subdoc { user: ObjectId, username }
+              if (sw && typeof sw === 'object' && 'user' in sw) {
+                // if populated, sw.user may be an object with username/stageName
+                const u = sw.user;
+                const nameFromPopulated = u && typeof u === 'object' ? (u.username || u.stageName || u.email) : null;
+                return nameFromPopulated || sw.username || 'User';
+              }
+              // case 2: legacy populated user object
+              if (sw && typeof sw === 'object') {
+                return sw.username || sw.stageName || sw.email || 'User';
+              }
+              // case 3: raw ObjectId string fallback
+              return String(sw);
+            })
             .join(', ');
-          const status = 'In Progress';
+          const status = s.isEnded ? 'Completed' : 'In Progress';
+          const href = s.isEnded ? `/split-sheet/${id}` : `/session-v2/${id}`;
           return (
             <div className="sv2-row" key={id}>
               <div className="title-cell">
-                <Link to={`/session/${id}`} className="link-title">{s.songTitle || 'Untitled'}</Link>
+                <Link to={href} className="link-title">{s.songTitle || 'Untitled'}</Link>
               </div>
               <div>{dateStr}</div>
               <div className="mono">{String(id).slice(-5).toUpperCase()}</div>
@@ -132,22 +200,64 @@ export default function AllSessionsV2() {
               <div>
                 <span className={`badge ${status.includes('Progress') ? 'inprogress' : status.toLowerCase()}`}>{status}</span>
               </div>
-              <div className="more">···</div>
+              <div className="more" style={{ position: 'relative' }}>
+                <span
+                  role="button"
+                  aria-label="More options"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenId(menuOpenId === id ? null : id);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >···</span>
+                {menuOpenId === id && (
+                  <div
+                    className="sv2-popover"
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '100%',
+                      background: '#fff',
+                      border: '1px solid rgba(0,0,0,.12)',
+                      borderRadius: 8,
+                      boxShadow: '0 8px 24px rgba(0,0,0,.08)',
+                      padding: '6px 8px',
+                      zIndex: 10
+                    }}
+                  >
+                    <button className="btn outline" onClick={() => handleDelete(id)}>Delete</button>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
-        {list.length === 0 && (
+        {pageList.length === 0 && (
           <div className="sv2-empty">No sessions yet</div>
         )}
       </div>
 
-      <footer className="sv2-pager">
-        <button className="btn ghost" disabled>Previous</button>
-        <button className="btn page active">1</button>
-        <button className="btn page">2</button>
-        <button className="btn page">3</button>
-        <button className="btn ghost">Next</button>
-      </footer>
+      {totalPages > 1 && (
+        <footer className="sv2-pager">
+          <button
+            className="btn ghost"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          >Previous</button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+            <button
+              key={p}
+              className={`btn page ${p === currentPage ? 'active' : ''}`}
+              onClick={() => setCurrentPage(p)}
+            >{p}</button>
+          ))}
+          <button
+            className="btn ghost"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          >Next</button>
+        </footer>
+      )}
 
       {createOpen && (
         <Modal onClose={() => setCreateOpen(false)}>
