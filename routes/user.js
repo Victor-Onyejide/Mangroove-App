@@ -101,12 +101,18 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 
     const {
         songTitle,
+        sessionType
     } = req.body;
+
+    // Fetch creator to capture username for denormalized storage
+    const creatorUser = await User.findById(req.user._id).select('username');
 
     const session = new Session({
         creator: req.user._id,
         songTitle: songTitle,
-        songwriters: [req.user._id],
+        sessionType: sessionType,
+        // Store both user id and username in songwriters
+        songwriters: [{ user: req.user._id, username: creatorUser?.username || '' }],
         joinLink: uuidv4(),
         linkExpiresAt: new Date(),
     });
@@ -117,7 +123,7 @@ userRouter.post('/create-session', isAuth, expressAsyncHandler(async(req, res) =
 // Get session by ID
 userRouter.get('/session/:id', isAuth, expressAsyncHandler(async(req,res) =>{
     const sessionId = req.params.id;
-    const session = await Session.findById(sessionId).populate({path:'songwriters', select:'_id  username stageName affiliation publisher role ownership'})
+    const session = await Session.findById(sessionId).populate({path:'songwriters.user', select:'_id username stageName affiliation publisher role ownership'})
     const userId = req.user._id;
     const isCreator = session.creator._id.toString() === userId;
     const isParticipant = session.invitations.map(p=> p._id.toString()).includes(userId);
@@ -129,15 +135,16 @@ userRouter.get('/sessions', isAuth, expressAsyncHandler(async(req,res) => {
     const userId = req.user._id;
 
     // Sessions the user created
-    const created = await Session.find({ creator: userId });
+    const created = await Session.find({ creator: userId })
+        .populate({ path: 'songwriters.user', select: '_id username stageName email' });
 
     // Sessions the user joined (accepted invitation) but did NOT create
-    const joined = await Session.find({
+        const joined = await Session.find({
       creator: { $ne: userId },
       invitations: {
         $elemMatch: { invitee: userId, status: 'accepted' }
       }
-    });
+        }).populate({ path: 'songwriters.user', select: '_id username stageName email' });
 
     res.json({ created, joined });
 
@@ -162,9 +169,11 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
         console.log("No invitation found for user:", userId);
     }
 
-    // Add user to songwriters if not already present
-    if (!session.songwriters.includes(userId)) {
-        session.songwriters.push(userId);
+    // Add user to songwriters if not already present (store id + username)
+    const alreadySongwriter = Array.isArray(session.songwriters) && session.songwriters.some(sw => String(sw.user) === String(userId));
+    if (!alreadySongwriter) {
+        const user = await User.findById(userId).select('username role');
+        session.songwriters.push({ user: userId, username: user?.username || '' });
         console.log("User added to songwriters:", userId);
     } else {
         console.log("User already in songwriters:", userId);
@@ -187,9 +196,19 @@ userRouter.post('/session/:id/join', isAuth, expressAsyncHandler(async (req, res
         console.log("New invitation added:", newInvite);
     }
 
+    // If a role was provided from the accept page, update the user's role
+    if (req.body && req.body.role) {
+        const role = String(req.body.role);
+        const user = await User.findById(userId);
+        if (user) {
+            user.role = role;
+            await user.save();
+        }
+    }
+
     // Save the session
     await session.save();
-    await session.populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
+    await session.populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
     sendSessionUpdate(sessionId, session);
     // Fetch user info for avatar
     const user = await User.findById(userId).select('username');
@@ -211,7 +230,7 @@ userRouter.post('/session/:id/end', isAuth, expressAsyncHandler(async (req, res)
     }
     session.isEnded = true;
     await session.save();
-    session = await Session.findById(sessionId).populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
+    session = await Session.findById(sessionId).populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
     sendSessionUpdate(sessionId, {ended:true});
     res.json({ message: 'Session ended successfully', session });
 }));
@@ -251,7 +270,14 @@ userRouter.put('/session/:id/ownership', async (req, res) => {
         await session.save();
 
         // Re-populate songwriters before returning to ensure frontend gets full objects
-    await session.populate({ path: 'songwriters', select: '_id username stageName affiliation publisher role ownership' });
+        await session.populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
+
+        // Broadcast updated session to all SSE subscribers so splits update live
+        try {
+            sendSessionUpdate(session._id.toString(), session);
+        } catch (e) {
+            console.warn('Failed to send SSE update after ownership change:', e);
+        }
 
         res.status(200).json({ message: 'Ownership updated successfully', session });
     } catch (error) {

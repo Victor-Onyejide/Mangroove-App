@@ -1,0 +1,19 @@
+.signupModal .signup-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+}
+
+.signupModal .showpass-row {
+	display: flex;
+	align-items: center;
+	margin-top: 12px;
+	font-size: 13px;
+}
+
+.signupModal .signup-actions {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 20px;
+}
+

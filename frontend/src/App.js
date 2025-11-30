@@ -1,4 +1,4 @@
-import {BrowserRouter as Router, Routes, Route, Link, useNavigate} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation} from 'react-router-dom';
 import './App.css';
 import LoginPage from './pages/LoginPage';
 import HomePage from './pages/HomePage';
@@ -19,16 +19,32 @@ import './axiosConfig.js';
 import { getCurrentUser, logoutUser } from './features/userSlice';
 import "jspdf-autotable";
 import SessionsEditPage from './pages/SessionsEditPage.js';
+import AllSessionsV2 from './pages/AllSessionsV2';
+import SessionDetailsV2 from './pages/SessionDetailsV2';
+import SplitSheetPage from './pages/SplitSheetPage';
+import Navbar from './components/Navbar';
+import Modal from './components/Modal';
+import SigninForm from './components/SigninForm';
+import SignupForm from './components/SignupForm';
+import Footer from './components/Footer';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 
 function App() {
   const navigate = useNavigate(); 
+  const location = useLocation();
   const dispatch = useDispatch();
   const { isLoggedIn, loading } = useSelector((state) => state.user);
   const userInfo = useSelector((state) => state.user.userInfo);
+  const { sessionId, shareLink } = useSelector((state) => state.user);
 
   //Menu Open and Close State
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+  // Track completion of initial auth check to avoid premature sign-in modal
+  const [authChecked, setAuthChecked] = useState(false);
   
   const toggle = () => {
     setMenuOpen((prev) => !prev); // <-- This toggles the menuOpen state
@@ -40,7 +56,8 @@ function App() {
     try{
       // Dispatch the logout thunk
       await dispatch(logoutUser()).unwrap();
-      navigate("/login");
+      // After signing out, send the user to the home page
+      navigate("/");
       toast.success("You have been logged out.");
     } catch(error){
       toast.error("Failed to log out. Please try again.");
@@ -49,64 +66,84 @@ function App() {
 
 
 useEffect(() => {
-  dispatch(getCurrentUser());
+  // Perform initial auth check; mark when finished regardless of outcome
+  dispatch(getCurrentUser()).finally(() => setAuthChecked(true));
 }, [dispatch]);
 
 useEffect(() => {
-  // Avoid redirect flicker while checking session, and allow public home route
-  if (loading) return;
-  const publicPaths = ['/', '/login', '/signup'];
-  if (!isLoggedIn && !publicPaths.includes(window.location.pathname)) {
-    navigate('/login');
+  // Wait until initial auth check completes to decide about sign-in modal
+  if (loading || !authChecked) return;
+  const publicPaths = ['/', '/login', '/signup', '/terms', '/privacy'];
+  const currentPath = location.pathname;
+  if (!isLoggedIn && !publicPaths.includes(currentPath)) {
+    setLoginOpen(true);
   }
-}, [isLoggedIn, loading, navigate]);
+}, [isLoggedIn, loading, authChecked, location]);
 
   return (
-    <div>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <div className="navContainer">
-        {/* <nav>
-          <Link to="/" className="logo">
-              M
-          </Link>
+    <div className="app-shell">
+      <ToastContainer position="top-right" autoClose={3000} containerStyle={{ zIndex: 1000001 }} />
+      <div className="navContainer mb-5">
+        <Navbar
+          onSignInClick={() => setLoginOpen(true)}
+          userInfo={userInfo}
+          onLogout={handleLogout}
+        />
+      </div>
 
-          <div className="wrapper">
-
-            {userInfo ? <Avatar name={userInfo.username}/>: <Link to="/login">Login</Link>}
-
-            <div className={`menu${menuOpen ? ' open' : ''}`}  onClick={toggle}>
-              <span className="bar"></span>
-              <span className="bar"></span>
-              <span className="bar"></span>
-            </div>
-            <div className="links">
-              <Link to="/" className="link p-5">Home</Link>
-              {userInfo ? 
-                <Link className="link p-5" onClick={handleLogout}>LogOut</Link>:<></>
+      {loginOpen && (
+        <Modal onClose={() => setLoginOpen(false)}>
+          <SigninForm
+            onRequestSignUp={() => {
+              setLoginOpen(false);
+              setSignupOpen(true);
+            }}
+            onSuccess={() => {
+              setLoginOpen(false);
+              if (shareLink && sessionId) {
+                navigate(`/accept/${sessionId}`);
+              } else {
+                navigate('/sessions-v2');
               }
-              <Link to="/signup" className="link p-5"> Sign Up</Link>
-              <Link to="/sessions" className="link p-5"> All Sessions</Link>
-            </div>
-          </div>
-        </nav> */}
-      </div>
+            }}
+          />
+        </Modal>
+      )}
+      {signupOpen && (
+        <Modal onClose={() => setSignupOpen(false)}>
+          <SignupForm
+            onSuccess={() => {
+              setSignupOpen(false);
+              if (shareLink && sessionId) {
+                navigate(`/accept/${sessionId}`);
+              } else {
+                navigate('/sessions-v2');
+              }
+            }}
+          />
+        </Modal>
+      )}
 
-      <div className="App">
-          <Routes>
-            <Route path="/" element={<HomePage/>}/>
-            {/* <Route path="/" element={<LoginPage/>}/> */}
-            <Route path="/login" element={<LoginPage/>}/>
-            <Route path="/signup" element={<SignUpPage/>}/>
-            <Route path="/sessions" element={<AllSessionsPage/>}/>
-            <Route path="/session/:id" element={<SessionsPage/>}/>
-            <Route path="/qrcode/:id" element={<QrCode />}/>
-            <Route path="/guest" element={<GuestPage/>}/>
-            <Route path="/joined/:id" element={<JoinedSession/>}/>
-            <Route path="/accept/:id" element={<AcceptPage/>}/>
-            <Route path="/session/:id/edit" element={<SessionsEditPage/>}/>
-          </Routes>
-      </div>
-
+      <main className="app-main">
+        <Routes>
+          <Route path="/" element={<HomePage/>}/>
+          <Route path="/login" element={<LoginPage/>}/>
+          <Route path="/signup" element={<SignUpPage/>}/>
+          <Route path="/sessions" element={<AllSessionsPage/>}/>
+          <Route path="/sessions-v2" element={<AllSessionsV2/>}/>
+          <Route path="/session/:id" element={<SessionsPage/>}/>
+          <Route path="/session-v2/:id" element={<SessionDetailsV2 />}/>
+          <Route path="/split-sheet/:id" element={<SplitSheetPage />}/>
+          <Route path="/qrcode/:id" element={<QrCode />}/>
+          <Route path="/guest" element={<GuestPage/>}/>
+          <Route path="/joined/:id" element={<JoinedSession/>}/>
+          <Route path="/accept/:id" element={<AcceptPage/>}/>
+          <Route path="/session/:id/edit" element={<SessionsEditPage/>}/>
+          <Route path="/terms" element={<TermsPage/>}/>
+          <Route path="/privacy" element={<PrivacyPage/>}/>
+        </Routes>
+      </main>
+      <Footer />
     </div>
   );
 }

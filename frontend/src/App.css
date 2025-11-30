@@ -1,6 +1,16 @@
-.App {
-  /* display: flex;
-  justify-content: center;
-  align-items: center; */
-  /* height: 100vh; */
+/* Global app styles */
+html, body, #root { height:100%; }
+body { display:flex; flex-direction:column; min-height:100vh; }
+
+/* App shell ensures footer sticks to bottom */
+.app-shell { flex:1; display:flex; flex-direction:column; min-height:100vh; }
+.app-main { flex:1; display:flex; flex-direction:column; }
+.app-main { padding-top:72px; } /* offset for fixed navbar */
+
+/* Footer automatically pushed down */
+.app-footer { margin-top:auto; }
+
+/* Optional: prevent Footer overlap with very small viewports */
+@media (max-height:500px){
+	.app-footer { padding:24px 12px; }
 }

@@ -27,9 +27,9 @@ export default function SignUpPage() {
       if (shareLink) {
           //TODO: Check if the sessionId is valid(i.e if the link has expired)
           navigate(`/accept/${sessionId}`);
-        } else {
-            navigate('/sessions');
-        }
+    } else {
+      navigate('/sessions-v2');
+    }
     } catch (err) {
       console.error("Signup error:", err);
       toast.error("Signup failed. Please try again.");

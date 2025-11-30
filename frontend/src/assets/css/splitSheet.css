@@ -1,0 +1,160 @@
+/* Split Sheet V2 Styles */
+.splitsheet-page {
+  padding: 40px 24px;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #f7f9fa;
+  min-height: 100vh;
+  color: #222;
+}
+.splitsheet-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto 24px;
+}
+.splitsheet-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+}
+.splitsheet-brand .logo-circle {
+  width: 28px;
+  height: 28px;
+  background: #05994f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 14px;
+}
+.splitsheet-download-btn {
+  background: #05994f;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+  transition: background .15s ease;
+}
+.splitsheet-download-btn:hover { background:#048344; }
+
+.splitsheet-card {
+  background: #fff;
+  max-width: 1100px;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px -4px rgba(16,24,40,0.08), 0 2px 8px -2px rgba(16,24,40,0.04);
+  padding: 48px 56px 56px;
+}
+.splitsheet-header-grid { /* reserved for future grid layout; keep non-empty to satisfy linter */
+  display: block;
+}
+.cover-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+.splitsheet-cover {
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(135deg,#ff8a05,#ff005c,#3300ff);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color:#fff;
+  font-size: 40px;
+  font-weight: 700;
+}
+.splitsheet-meta-block h1 {
+  font-size: 28px;
+  margin: 0 0 24px;
+  font-weight: 600;
+}
+.splitsheet-meta-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 32px;
+  font-size: 12px;
+}
+.splitsheet-meta-columns dt { font-weight:600; margin-bottom: 4px; color:#555; }
+.splitsheet-meta-columns dd { margin:0; font-size:13px; font-weight:500; }
+.splitsheet-logo-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  font-size:12px;
+  font-weight:500;
+  margin-top: 4px;
+}
+.splitsheet-table-wrapper { margin-top: 8px; overflow-x: auto; }
+.splitsheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed; /* prevent overflow by fixing layout */
+}
+.splitsheet-table thead tr { background:#f0f3f5; }
+.splitsheet-table th, .splitsheet-table td {
+  padding: 12px 10px;
+  border: 1px solid #e2e6ea;
+  vertical-align: top;
+  word-break: break-word; /* wrap long content */
+}
+.splitsheet-table th { font-weight:600; color:#444; }
+.splitsheet-writer-cell {
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.writer-avatar {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:#e0e5e9;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  color:#444;
+  overflow:hidden;
+  font-size:12px;
+}
+.writer-avatar img { width:100%; height:100%; object-fit:cover; }
+.writer-info { line-height: 1.3; }
+.writer-info .writer-name { font-weight:600; font-size:13px; }
+.writer-info .writer-email { font-size:11px; color:#666; }
+.splitsheet-ownership { font-weight:600; text-align:center; }
+.splitsheet-agreement { text-align:center; margin:40px 0 16px; font-size:12px; font-weight:500; color:#333; }
+.splitsheet-signatures { display:grid; gap:16px; }
+.signature-item { text-align:center; font-size:13px; color:#222; }
+.signature-item .sig-name {   font-family: 'Brush Script MT', cursive; /* Using a specific script font with a generic fallback */
+ font-size:16px; font-weight:600; }
+.signature-item .sig-date { margin-top:4px; font-size:10px; color:#777; }
+
+@media (max-width: 900px) {
+  .splitsheet-header-grid { grid-template-columns: 1fr; }
+  .splitsheet-cover { width:140px; height:140px; }
+  .splitsheet-card { padding:32px 28px 40px; }
+  .splitsheet-table { font-size: 11px; }
+  .splitsheet-table th, .splitsheet-table td { padding: 10px 8px; }
+  /* On tablet/mobile, show only avatar for writers to keep table compact */
+  .splitsheet-writer-cell {
+    justify-content: center;
+  }
+  .writer-info {
+    display: none;
+  }
+}

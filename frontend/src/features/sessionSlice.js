@@ -18,12 +18,15 @@ export const fetchSession = createAsyncThunk(
 
 export const joinSession = createAsyncThunk(
     'sessions/joinSession',
-    async (sessionId, { getState, rejectWithValue }) => {
-        const token = getState().user.userInfo?.token; // Extract token from userInfo
+    async (payload, { getState, rejectWithValue }) => {
+        const { sessionId, role } =
+            typeof payload === 'string' ? { sessionId: payload, role: undefined } : payload;
+        const token = getState().user.userInfo?.token; // Extract token from userInfo (if needed)
         try {
+            const body = role ? { role } : {};
             const { data } = await axios.post(
                 `/api/user/session/${sessionId}/join`,
-                {},
+                body,
                 {
                     withCredentials: true,
                 }

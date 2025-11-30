@@ -21,13 +21,18 @@ hr {
 }
 /* Nav Bar */
 .navContainer{
-  margin-bottom: 150px;
- position: relative;
- z-index: 10;
+  /* The old 150px bottom margin was used as a spacer for a fixed nav.
+    We render the Navbar inside components now, so remove the large spacer
+    to avoid an empty gap at the top of the page. */
+  margin-bottom: 0; /* removed large placeholder gap */
+  position: relative;
+  /* removed z-index to avoid creating a stacking context that can
+    interfere with the navbar's stacking; the navbar itself controls z-index */
 }
-nav {
-  position: fixed;
-  top: 0;
+
+/* Reserve space for the fixed navbar so page content doesn't sit under it. Adjust if you change nav height. */
+.App {
+  padding-top: 72px; /* approx navbar height */
 }
 /*
 nav {
@@ -51,7 +56,7 @@ nav {
 .links.active {
   display: flex;
 } */
-nav a:hover{
+.navbarComponent a:hover{
   background-color: #ebebeb;
 }
 /* nav .menu {
@@ -207,4 +212,9 @@ button{
 }
 
 @media (max-width:950px) {
+}
+
+/* Ensure Toastify toasts render above fixed navbar */
+.Toastify__toast-container {
+  z-index: 1000001 !important;
 }

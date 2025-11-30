@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { loginUser } from "../features/userSlice";
@@ -9,6 +9,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -17,10 +18,16 @@ export default function LoginPage() {
             if (shareLink && sessionId) {
                 navigate(`/accept/${sessionId}`);
             } else {
-                navigate('/sessions');
+                const params = new URLSearchParams(location.search);
+                const redirect = params.get('redirect');
+                if (redirect) {
+                    navigate(decodeURIComponent(redirect), { replace: true });
+                } else {
+                    navigate('/sessions-v2');
+                }
             }
         }
-    }, [userInfo, shareLink, sessionId, navigate]);
+    }, [userInfo, shareLink, sessionId, navigate, location.search]);
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -45,7 +52,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="loginPage">
+        <div className="loginPage mt-5">
             <h2>Log in to your account</h2>
             <div className="form mt-4">
                 <input
@@ -73,9 +80,9 @@ export default function LoginPage() {
                     Continue
                 </button>
             </div>
-            <p className="mt-3">
+            {/* <p className="mt-3">
                 Don't have an account? <Link to="/signup" className="signupText">Sign up for free &#8594;</Link>
-            </p>
+            </p> */}
         </div>
     );
 }

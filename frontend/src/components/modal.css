@@ -1,31 +1,454 @@
 .modal-overlay {
     position: fixed;
-    top: 0;
+    top: 0; /* cover full viewport, including behind navbar */
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    /* width: 600px; */
+    /* height: 500px; */
+    /* keep overlay itself clear; glass effect moved to pseudo-element */
+    background: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    overflow-y: auto; /* allow scrolling when content taller than viewport */
+    padding: 16px 0;  /* breathing room so card isn’t flush to edges */
+    z-index: 1000002;
+     /* above fixed navbar (99999) and toast */
+}
+
+/* Create the blurred, dimmed backdrop behind the modal content */
+.modal-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 0;
+    /* ensure interaction passes through to overlay/content */
+    pointer-events: none;
+    /* border-radius: 20px; */
+
 }
 
 .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
+    background-color: white;
+    /* background: radial-gradient(circle at top, rgba(22, 163, 74, 0.07), rgba(15, 118, 110, 0.03)) #ffffff; */
+    /* border-radius: 32px; */
     position: relative;
-    width: 400px;
-    max-width: 90%;
+    max-width: 520px;
+    width: 100%;
+    max-height: calc(100vh - 48px); /* leave a bit of breathing room on top/bottom */
+    overflow-y: auto;               /* scroll inside modal if needed */
+    /* padding: 40px 44px 32px; */
+    box-shadow:
+        0 40px 120px rgba(15, 23, 42, 0.35),
+        0 6px 18px rgba(15, 23, 42, 0.16);
+    z-index: 1;
+    /* above the ::before backdrop */
+    border-radius: 20px;
 }
 
 .modal-close {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 16px;
+    right: 16px;
+    /* top: 25px;
+    right:25px; */
     background: none;
-    border: none;
-    font-size: 1.5rem;
+    /* border: none; */
+    /* border-radius: 20px; */
+    font-size: 28px;
+    line-height: 1;
+    color: #1B4332;
+    /* deep green close icon */
     cursor: pointer;
+    opacity: 0.85;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.modal-close:hover {
+    opacity: 1;
+    transform: scale(1.06);
+}
+
+.signinModal,
+.signupModal,
+.createSessionModal {
+    background-color: white;
+    /* padding: 0; */
+    margin-top: 0;
+    /* height: 500px;
+    width: 500px; */
+    padding: 50px 10px 10px 10px;
+    border-radius: 20px;
+}
+
+/* Tweaks specifically for the Create Session modal */
+/* .modal-content .createSessionModal {
+    max-width: none;
+    padding: 0;
+    border-radius: 0;
+} */
+
+.modal-content .createSessionModal h2 {
+    margin: 0 0 24px;
+    font-size: 26px;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.02em;
+    color: #123a25;
+}
+
+/* Login modal visuals inside the panel */
+.modal-content .signinModal h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1B4332;
+    /* deep green */
+}
+
+.modal-content .signinModal p {
+    margin: 0 0 16px;
+}
+
+.modal-content .signinModal .form,
+.modal-content .signupModal .form,
+.modal-content .createSessionModal .form
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    align-items: stretch;
+    padding: 20px 20px 20px 20px;
+}
+
+/* Ensure action rows inside modals use full width and align with form fields */
+.modal-content .signinModal .actions,
+.modal-content .signupModal .actions,
+.modal-content .createSessionModal .actions {
+    width: 100%;
+}
+
+.modal-content .signinModal .form input,
+.modal-content .signupModal .form input,
+.modal-content .createSessionModal .form input,
+.modal-content .signinModal .form select,
+.modal-content .signupModal .form select,
+.modal-content .createSessionModal .form select
+ {
+     padding: 16px 18px;
+     border-radius: 14px;
+     border: 1px solid rgba(148, 163, 184, 0.5);
+     background: rgba(255, 255, 255, 0.9);
+     box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.2) inset;
+    outline: none;
+}
+
+/* Make inputs span full width when explicitly requested (inline style or class) */
+.modal-content .createSessionModal .form .fullwidth,
+.modal-content .createSessionModal .form input[style*="gridColumn"] {
+    grid-column: 1 / -1;
+}
+
+.modal-content .signinModal .form input:focus,
+.modal-content .signinModal .form select:focus,
+.modal-content .signupModal .form input:focus,
+.modal-content .signupModal .form select:focus,
+.modal-content .createSessionModal .form input:focus,
+.modal-content .createSessionModal .form select:focus
+{
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.modal-content .signinModal .form select,
+.modal-content .signupModal .form select,
+.modal-content .createSessionModal .form select
+ {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('../assets/svg/dropdown.svg');
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+}
+
+/* Disabled Create button state */
+/* .modal-content .signinModal .actions .action-btn:disabled {
+    opacity:  .6;
+    cursor: not-allowed;
+} */
+
+
+.modal-content .signinModal .action-btn,
+.modal-content .signupModal .action-btn,
+.modal-content .createSessionModal .action-btn,
+.modal-content .createSessionModal .save-btn {
+    background: #05994f;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    padding: 16px 24px;
+    text-align: center;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Responsive modal adjustments for small screens */
+@media (max-width: 600px) {
+    .modal-content {
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 24px;
+        padding: 24px 16px 20px;
+        margin: 0;
+        max-height: calc(100vh - 32px); /* slightly tighter for short mobile viewports */
+        box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
+
+     .modal-close {
+        top: 30px;
+        right:30px;
+        font-size: 22px;
+    } 
+
+    /* Make action buttons full-width for easier tapping on phones */
+    .modal-content .signinModal .action-btn,
+    .modal-content .signupModal .action-btn,
+    .modal-content .createSessionModal .action-btn,
+    .modal-content .createSessionModal{
+        width: 100%;
+        padding: 12px 16px;
+    }
+
+    /* Stack form fields and actions on small screens */
+    .modal-content .createSessionModal .form {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+
+    /* Collapse the signup grid into a single column */
+    .modal-content .signupModal .form {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+
+    .modal-content .signinModal h2,
+    .modal-content .signupModal h2 {
+        font-size: 22px;
+    }
+
+    .modal-overlay {
+        align-items: flex-start; /* default: start near top (used by signup) */
+        padding: 12px 0;
+    }
+}
+
+/* At medium widths (e.g. around 560px), keep signin & create session centered
+   while signup can still choose its own internal spacing. */
+@media (min-width: 540px) and (max-width: 800px) {
+    .modal-overlay {
+        align-items: center; /* center vertically for dialog-like modals */
+    }
+}
+
+.modal-content .signinModal .btn.btn-link {
+    color: #1B4332;
+    text-decoration: none;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.modal-content .signinModal .actions,
+.modal-content .signupModal .actions,
+.modal-content .createSessionModal .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+}
+
+/* Sign-up form styles reuse the same look */
+.modal-content .signupModal h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1B4332;
+}
+
+.modal-content .createSessionModal .moreOptions-btn{
+    color: black;
+}
+.moreOptions-btn{
+    text-align: center;
+    width: 100%;
+}
+
+/* 'Send a message' helper text under modal */
+.sendAMessage{
+    display:block;
+    margin-top:12px;
+    font-size:13px;
+    color:#4b4b4b;
+    text-align:center;
+}
+
+/* ===================== Ownership (Song Splits) Modal ===================== */
+.modal-content .ownershipModal {
+    background-color: #ffffff;
+    padding: 50px 16px 24px 16px; /* align with other modals */
+    border-radius: 20px;
+}
+
+.modal-content .ownershipModal h2 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1B4332;
+    text-align: center;
+}
+
+.modal-content .ownershipModal p.helper {
+    margin: 0 0 20px;
+    font-size: 14px;
+    text-align: center;
+    color: #4b5563;
+}
+
+.modal-content .ownershipModal .form.ownership-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 0 8px 8px;
+    max-height: 50vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.modal-content .ownershipModal .ownership-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px 16px;
+    background: rgba(248, 250, 252, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 16px;
+    position: relative;
+}
+
+.modal-content .ownershipModal .ownership-row .row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.modal-content .ownershipModal .ownership-row .songwriter-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #123a25;
+    letter-spacing: 0.02em;
+}
+
+.modal-content .ownershipModal .pct-pair {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.modal-content .ownershipModal .pct-pair .field {
+    flex: 1 1 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-content .ownershipModal label.field-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1B4332;
+}
+
+.modal-content .ownershipModal input[type="number"] {
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    outline: none;
+    font-size: 14px;
+}
+
+.modal-content .ownershipModal input[type="number"]:focus {
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.modal-content .ownershipModal .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 24px;
+    padding: 0 8px;
+}
+
+.modal-content .ownershipModal .actions .cancel-btn {
+    background: #ffffff;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    color: #1B4332;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 14px;
+    cursor: pointer;
+}
+
+.modal-content .ownershipModal .actions .action-btn {
+    background: #05994f;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 32px;
+    text-align: center;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.modal-content .ownershipModal .actions .action-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+    .modal-content .ownershipModal {
+        padding: 42px 12px 20px;
+    }
+    .modal-content .ownershipModal .ownership-row {
+        padding: 12px 14px 14px;
+    }
+    .modal-content .ownershipModal .pct-pair {
+        gap: 10px;
+    }
+    .modal-content .ownershipModal .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .modal-content .ownershipModal .actions .cancel-btn,
+    .modal-content .ownershipModal .actions .action-btn {
+        width: 100%;
+        padding: 12px 16px;
+    }
 }
