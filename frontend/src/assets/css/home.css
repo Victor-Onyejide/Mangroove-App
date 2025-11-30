@@ -11,7 +11,7 @@ html, body {
      defensive fallback; if you prefer to find the root cause we can remove
      this after auditing. */
   max-width: 100%;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
 }
 .herosection {
   position: relative;
