@@ -67,7 +67,7 @@
 .splitsheet-cover {
   width: 180px;
   height: 180px;
-  background: linear-gradient(135deg,#ff8a05,#ff005c,#3300ff);
+  /* background: linear-gradient(135deg,#ff8a05,#ff005c,#3300ff); */
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -76,6 +76,9 @@
   color:#fff;
   font-size: 40px;
   font-weight: 700;
+  /* If this class is used on an <img>, ensure the svg scales and covers the box */
+  object-fit: cover;
+  margin-bottom: 50px;
 }
 .splitsheet-meta-block h1 {
   font-size: 28px;

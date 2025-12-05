@@ -159,6 +159,8 @@ const handleShareLink = async () => {
       withCredentials:true
     })
 
+    sseRef.current = eventSource;
+
     eventSource.onopen = () => {
       console.log("EventSource connection opened.");
     };

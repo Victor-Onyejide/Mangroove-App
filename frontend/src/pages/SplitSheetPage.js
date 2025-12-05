@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
+import DefaultCover from '../assets/svg/default.svg';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import jsPDF from 'jspdf';
@@ -59,11 +60,13 @@ export default function SplitSheetPage() {
     const writers = session.songwriters || [];
     writers.forEach((w) => {
       x = marginLeft;
-      const idVal = w?._id || w?.id || w;
+      // Support both shapes: { user: {...}, username } and flat user objects
+      const userObj = w && typeof w === 'object' && 'user' in w ? w.user : w;
+      const idVal = (userObj && (userObj._id || userObj.id)) || (w && (w._id || w.id)) || w;
       const ownRec = (session.ownership || []).find(o => String(o.songwriter) === String(idVal));
       const writingPct = ownRec ? (ownRec.writing ?? 0) : 0;
       const publishingPct = ownRec ? (ownRec.publishing ?? 0) : 0;
-      const detailLines = [w?.username || 'User', w?.email || '', w?.stageName ? `(${w.stageName})` : ''];
+      const detailLines = [ (userObj && (userObj.username || userObj.stageName)) || w?.username || 'User', userObj?.email || w?.email || '', userObj?.stageName ? `(${userObj.stageName})` : ''];
       // Calculate row height based on lines
       const lineHeight = 12;
       const writerHeight = (detailLines.filter(Boolean).length || 1) * lineHeight + 8;
@@ -126,9 +129,10 @@ export default function SplitSheetPage() {
 
       <div className="splitsheet-card">
         <div className="splitsheet-header-grid">
-            <div className="cover-wrapper">
-                <div className="splitsheet-cover">🎵</div>
-            </div>
+      <div className="cover-wrapper">
+        {/* Use the default SVG asset for the cover; keep the same class for styling */}
+        <img src={DefaultCover} alt="cover" className="splitsheet-cover" />
+      </div>
 
           <div className="splitsheet-meta-block">
             <h1>{session.songTitle} Split Sheet</h1>
@@ -172,25 +176,29 @@ export default function SplitSheetPage() {
             </thead>
             <tbody>
               {writers.map((w) => {
-                const idVal = w?._id || w?.id || w;
+                // Normalize songwriter shape
+                const userObj = w && typeof w === 'object' && 'user' in w ? w.user : w;
+                const idVal = (userObj && (userObj._id || userObj.id)) || (w && (w._id || w.id)) || w;
                 const ownRec = ownership.find(o => String(o.songwriter) === String(idVal));
                 const writingPct = ownRec ? (ownRec.writing ?? 0) : 0;
                 const publishingPct = ownRec ? (ownRec.publishing ?? 0) : 0;
+                const displayName = (userObj && (userObj.username || userObj.stageName)) || w?.username || 'Unknown';
+                const avatarText = (displayName || 'U').slice(0, 2).toUpperCase();
                 return (
                   <tr key={idVal}>
                     <td>
                       <div className="splitsheet-writer-cell">
-                        <div className="writer-avatar">{(w?.username || 'U').slice(0,2).toUpperCase()}</div>
+                        <div className="writer-avatar">{avatarText}</div>
                         <div className="writer-info">
-                          <div className="writer-name">{w?.username || 'Unknown'}</div>
-                          {w?.email && <div className="writer-email">{w.email}</div>}
-                          {w?.stageName && <div className="writer-email">({w.stageName})</div>}
+                          <div className="writer-name">{displayName}</div>
+                          {(userObj?.email || w?.email) && <div className="writer-email">{userObj?.email || w?.email}</div>}
+                          {(userObj?.stageName || w?.stageName) && <div className="writer-email">({userObj?.stageName || w?.stageName})</div>}
                         </div>
                       </div>
                     </td>
-                    <td>{w?.affiliation || ''}</td>
-                    <td>{w?.publisher || ''}</td>
-                    <td>{w?.role || ''}</td>
+                    <td>{userObj?.affiliation || w?.affiliation || ''}</td>
+                    <td>{userObj?.publisher || w?.publisher || ''}</td>
+                    <td>{userObj?.role || w?.role || ''}</td>
                     <td className="splitsheet-ownership">{writingPct}%</td>
                     <td className="splitsheet-ownership">{publishingPct}%</td>
                   </tr>

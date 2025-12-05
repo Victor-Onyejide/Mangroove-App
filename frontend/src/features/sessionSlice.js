@@ -90,8 +90,9 @@ const sessionSlice = createSlice({
             })
             .addCase(updateOwnership.fulfilled, (state, action) => {
                 state.loading = false;
-                const updatedSession = action.payload.session;
-                if (state.current?._id === updatedSession._id) {
+                // Accept either { session } or a session object directly
+                const updatedSession = (action.payload && action.payload.session) || action.payload || null;
+                if (updatedSession && state.current?._id === updatedSession._id) {
                     state.current = updatedSession;
                 }
             })
