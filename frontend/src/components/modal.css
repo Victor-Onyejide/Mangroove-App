@@ -335,6 +335,52 @@
     scrollbar-width: thin;
 }
 
+/* Styles for the proposal modal table */
+.modal-content .ownershipModal .proposal-list {
+    margin-top: 12px;
+    overflow-x: auto;
+}
+.modal-content .ownershipModal .proposal-list table th,
+.modal-content .ownershipModal .proposal-list table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(226,230,234,0.6);
+    font-size: 14px;
+}
+
+/* Mobile: make proposal list stack vertically for better readability */
+@media (max-width: 600px) {
+    .modal-content .ownershipModal .proposal-list table,
+    .modal-content .ownershipModal .proposal-list thead,
+    .modal-content .ownershipModal .proposal-list tbody,
+    .modal-content .ownershipModal .proposal-list th,
+    .modal-content .ownershipModal .proposal-list td,
+    .modal-content .ownershipModal .proposal-list tr {
+        display: block;
+        width: 100%;
+    }
+    .modal-content .ownershipModal .proposal-list thead {
+        display: none; /* hide header on small screens */
+    }
+    .modal-content .ownershipModal .proposal-list tr {
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        background: rgba(248,250,252,0.9);
+        border-radius: 10px;
+        border: 1px solid rgba(148,163,184,0.2);
+    }
+    .modal-content .ownershipModal .proposal-list td {
+        padding: 6px 4px;
+    }
+    .modal-content .ownershipModal .proposal-list td:before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #123a25;
+        font-size: 13px;
+    }
+}
+
 .modal-content .ownershipModal .ownership-row {
     display: flex;
     flex-direction: column;

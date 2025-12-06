@@ -24,6 +24,22 @@ const sessionSchema = new Schema({
     writing: { type: Number, required: true, min: 0, max: 100, default: 0 },
     publishing: { type: Number, required: true, min: 0, max: 100, default: 0 }
     }]
+        ,
+        // Pending ownership proposal that requires confirmation from joined participants
+        pendingOwnership: {
+            proposalId: { type: String },
+            proposal: [{
+                songwriter: { type: Schema.Types.ObjectId, ref: 'User' },
+                writing: { type: Number },
+                publishing: { type: Number }
+            }],
+            proposedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+            responses: [{
+                user: { type: Schema.Types.ObjectId, ref: 'User' },
+                accept: { type: Boolean }
+            }],
+            createdAt: { type: Date }
+        }
 })
 const Session = mongoose.model('Session', sessionSchema);
 export default Session;
