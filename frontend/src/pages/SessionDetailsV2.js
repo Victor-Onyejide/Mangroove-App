@@ -9,6 +9,7 @@ import { setSessionId, setShareLink } from '../features/userSlice';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { toast } from 'react-toastify';
 import OwnershipForm from '../components/OwnershipForm';
+import OwnershipProposalModal from '../components/OwnershipProposalModal';
 import Modal from '../components/Modal';
 import locationIcon from '../assets/svg/location.svg';
 import recordingIcon from '../assets/svg/recording.svg';
@@ -27,6 +28,7 @@ export default function SessionDetailsV2() {
   // const [session, setSession] = useState(null);
   const [sessionLink, setSessionLink] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [proposalModal, setProposalModal] = useState(null);
   
 
   const sseRef = useRef(null);
@@ -149,33 +151,86 @@ const handleShareLink = async () => {
       sseRef.current = null;
     }
     // For local development, use:
-    // const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
-    //   withCredentials: true
-    // });
-    // sseRef.current = eventSource;
+    const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
+      withCredentials: true
+    });
+    sseRef.current = eventSource;
 
     //For production (Heroku):
-    const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`,{
-      withCredentials:true
-    })
+    // const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`,{
+    //   withCredentials:true
+    // })
 
-    sseRef.current = eventSource;
+    // sseRef.current = eventSource;
 
     eventSource.onopen = () => {
       console.log("EventSource connection opened.");
     };
 
     eventSource.onmessage = (e) => {
-      // Parse SSE payload to detect session end without waiting for refetch
+      // Parse SSE payload and act on proposal messages specifically
       try {
         const payload = JSON.parse(e.data);
+        // Handle end signals quickly
         if (payload?.ended === true || payload?.isEnded === true || payload?.session?.isEnded === true) {
           navigate(`/split-sheet/${sessionId}`);
           return; // Skip refetch; we know it's ended
         }
-      } catch (_) {
+
+        // Ownership proposal arrived
+        if (payload?.type === 'ownershipProposal') {
+          // If this user is not the proposer and is a joined participant, show accept/decline prompt
+          const proposerId = String(payload.proposedBy || '');
+          const currentUserId = String(userId || '');
+          // Determine participants (accepted invitations)
+          const recipients = (session?.invitations || []).filter(inv => inv.status === 'accepted').map(i => String(i.invitee));
+          const isRecipient = recipients.includes(currentUserId);
+          if (isRecipient && proposerId !== currentUserId) {
+            setProposalModal({ proposalId: payload.proposalId, proposal: payload.proposal, proposedBy: proposerId });
+            return; // Do not immediately refetch; user will respond and refresh
+          }
+        }
+
+        // A participant rejected the proposal
+        if (payload?.type === 'ownershipRejected') {
+          const rejectedName = payload.rejectedByName;
+          if (rejectedName) {
+            toast.error(`${rejectedName} rejected the split proposal`);
+            dispatch(fetchSession(sessionId));
+          } else {
+            // Fallback: refresh session then try to resolve name
+            (async () => {
+              try {
+                  const updated = await dispatch(fetchSession(sessionId)).unwrap();
+                  const rejectedId = payload.rejectedBy;
+                  const sw = (updated?.songwriters || []).find(s => {
+                    const userObj = s && typeof s === 'object' && 'user' in s ? s.user : s;
+                    const id = (userObj && (userObj._id || userObj.id)) || s?._id || s?.id || s;
+                    return String(id) === String(rejectedId);
+                  }) || {};
+                  const name = (sw && (sw.username || sw.stageName)) || sw?.user?.username || 'A participant';
+                  toast.error(`${name} rejected the split proposal`);
+                  // session already refreshed by fetchSession above
+                } catch (e) {
+                  toast.error('A participant rejected the split proposal');
+                }
+            })();
+          }
+          return;
+        }
+
+        // Ownership was committed (everyone accepted)
+        if (payload?.type === 'ownershipCommitted') {
+          toast.success('Split proposal accepted and ownership updated');
+          dispatch(fetchSession(sessionId));
+          return;
+        }
+
+      } catch (err) {
         // Non-JSON payload; ignore and fall back to refetch
+        console.error('SSE parse error', err);
       }
+      // Default: refetch session to pick up changes
       dispatch(fetchSession(sessionId));
     }
 
@@ -188,7 +243,7 @@ const handleShareLink = async () => {
       console.log("Closing EventSource for session:", sessionId);
       eventSource.close();
     }
-  }, [dispatch, sessionId, loading, navigate]);
+  }, [dispatch, sessionId, loading, navigate, session, userId]);
 
   // Redirect now handled directly inside the SSE onmessage handler when an 'ended' flag is received.
 
@@ -378,6 +433,16 @@ const handleShareLink = async () => {
             onClose={() => setIsModalOpen(false)}
           />
         </Modal>
+      )}
+      {proposalModal && (
+        <OwnershipProposalModal
+          sessionId={sessionId}
+          proposalId={proposalModal.proposalId}
+          proposal={proposalModal.proposal}
+          proposedBy={proposalModal.proposedBy}
+          songwriters={session.songwriters || []}
+          onClose={() => setProposalModal(null)}
+        />
       )}
     </div>
   );

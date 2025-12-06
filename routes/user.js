@@ -250,23 +250,40 @@ userRouter.put('/session/:id/ownership', async (req, res) => {
             return res.status(404).json({ message: 'Session not found' });
         }
 
-        // Merge incoming ownership entries into existing session.ownership
-        // so partial updates don't wipe other songwriters' ownerships.
-        const existingOwnership = Array.isArray(session.ownership) ? session.ownership.slice() : [];
-        ownership.forEach(o => {
-            const songwriterId = String(o.songwriter);
-            // Accept either writing/publishing or a single percentage for backward compatibility
-            const writing = o.writing !== undefined ? Number(o.writing) : (o.percentage !== undefined ? Number(o.percentage) : 0);
-            const publishing = o.publishing !== undefined ? Number(o.publishing) : 0;
-            const idx = existingOwnership.findIndex(e => String(e.songwriter) === songwriterId);
-            if (idx !== -1) {
-                existingOwnership[idx].writing = writing;
-                existingOwnership[idx].publishing = publishing;
-            } else {
-                existingOwnership.push({ songwriter: songwriterId, writing, publishing });
-            }
-        });
-        session.ownership = existingOwnership;
+            // Merge incoming ownership entries into existing session.ownership
+            // so partial updates (e.g. updating only writing) don't overwrite other fields with 0.
+            const existingOwnership = Array.isArray(session.ownership) ? session.ownership.slice() : [];
+            ownership.forEach(o => {
+                const songwriterId = String(o.songwriter);
+                const idx = existingOwnership.findIndex(e => String(e.songwriter) === songwriterId);
+                const existing = idx !== -1 ? existingOwnership[idx] : null;
+
+                // Determine writing: prefer explicit non-empty incoming value, then percentage, then existing, else 0
+                let writing;
+                if (o.writing !== undefined && o.writing !== '') {
+                    writing = Number(o.writing);
+                } else if (o.percentage !== undefined && o.percentage !== '') {
+                    writing = Number(o.percentage);
+                } else {
+                    writing = existing ? existing.writing : 0;
+                }
+
+                // Determine publishing: prefer explicit non-empty incoming value, then existing, else 0
+                let publishing;
+                if (o.publishing !== undefined && o.publishing !== '') {
+                    publishing = Number(o.publishing);
+                } else {
+                    publishing = existing ? existing.publishing : 0;
+                }
+
+                if (idx !== -1) {
+                    existingOwnership[idx].writing = writing;
+                    existingOwnership[idx].publishing = publishing;
+                } else {
+                    existingOwnership.push({ songwriter: songwriterId, writing, publishing });
+                }
+            });
+            session.ownership = existingOwnership;
         await session.save();
 
         // Re-populate songwriters before returning to ensure frontend gets full objects
@@ -284,6 +301,125 @@ userRouter.put('/session/:id/ownership', async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
+// Propose an ownership update to all joined participants (creator initiates)
+userRouter.post('/session/:id/ownership/propose', isAuth, expressAsyncHandler(async (req, res) => {
+    const { ownership } = req.body;
+    if (!ownership || !Array.isArray(ownership)) {
+        return res.status(400).json({ message: 'Invalid ownership data' });
+    }
+    const session = await Session.findById(req.params.id);
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+
+    // Only creator can propose ownership changes
+    if (String(session.creator) !== String(req.user._id)) {
+        return res.status(403).json({ message: 'Only the session creator can propose ownership changes' });
+    }
+
+    const proposalId = uuidv4();
+    // Build proposal by merging incoming values with existing ownership where fields are omitted
+    const existingOwnership = Array.isArray(session.ownership) ? session.ownership.slice() : [];
+    const proposalEntries = ownership.map(o => {
+        const songwriterId = String(o.songwriter);
+        const idx = existingOwnership.findIndex(e => String(e.songwriter) === songwriterId);
+        const existing = idx !== -1 ? existingOwnership[idx] : null;
+
+        const writing = (o.writing !== undefined && o.writing !== '') ? Number(o.writing) : (o.percentage !== undefined && o.percentage !== '' ? Number(o.percentage) : (existing ? existing.writing : 0));
+        const publishing = (o.publishing !== undefined && o.publishing !== '') ? Number(o.publishing) : (existing ? existing.publishing : 0);
+        return { songwriter: songwriterId, writing, publishing };
+    });
+
+    session.pendingOwnership = {
+        proposalId,
+        proposal: proposalEntries,
+        proposedBy: req.user._id,
+        responses: [],
+        createdAt: Date.now()
+    };
+
+    await session.save();
+    await session.populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
+
+    // Broadcast proposal to clients so they can prompt users
+    try {
+        // include proposer username for convenience on clients
+        const proposerUser = await User.findById(req.user._id).select('username');
+        sendSessionUpdate(session._id.toString(), { type: 'ownershipProposal', proposalId: proposalId, proposal: session.pendingOwnership.proposal, proposedBy: req.user._id, proposedByName: proposerUser?.username || '' });
+    } catch (e) {
+        console.warn('Failed to send SSE ownership proposal:', e);
+    }
+
+    res.json({ message: 'Proposal sent', pendingOwnership: session.pendingOwnership });
+}));
+
+// Respond to a pending ownership proposal (accept or reject)
+userRouter.post('/session/:id/ownership/respond', isAuth, expressAsyncHandler(async (req, res) => {
+    const { proposalId, accept } = req.body;
+    const userId = req.user._id;
+    const session = await Session.findById(req.params.id);
+    if (!session) return res.status(404).json({ message: 'Session not found' });
+    if (!session.pendingOwnership || session.pendingOwnership.proposalId !== proposalId) {
+        return res.status(400).json({ message: 'No matching pending proposal' });
+    }
+
+    // Update or add response for this user
+    const existingIdx = (session.pendingOwnership.responses || []).findIndex(r => String(r.user) === String(userId));
+    if (existingIdx !== -1) {
+        session.pendingOwnership.responses[existingIdx].accept = Boolean(accept);
+    } else {
+        session.pendingOwnership.responses = session.pendingOwnership.responses || [];
+        session.pendingOwnership.responses.push({ user: userId, accept: Boolean(accept) });
+    }
+
+    await session.save();
+
+    // Determine recipients: all users who have accepted the invitation (joined participants)
+    const recipients = (session.invitations || []).filter(inv => inv.status === 'accepted').map(i => String(i.invitee));
+
+    // Check for any rejection
+    const anyReject = (session.pendingOwnership.responses || []).some(r => r.accept === false);
+    if (anyReject) {
+        // Clear pending and notify owner
+        const rejectedBy = session.pendingOwnership.responses.find(r => r.accept === false).user;
+        session.pendingOwnership = undefined;
+        await session.save();
+        try {
+            const rejectedUser = await User.findById(rejectedBy).select('username');
+            sendSessionUpdate(session._id.toString(), { type: 'ownershipRejected', rejectedBy: rejectedBy, rejectedByName: rejectedUser?.username || '' });
+        } catch (e) {
+            console.warn('Failed to send SSE ownership rejection:', e);
+        }
+        return res.json({ message: 'Proposal rejected by a participant' });
+    }
+
+    // If all recipients have responded and all accepted, commit the ownership
+    const responses = session.pendingOwnership.responses || [];
+    const respondedUserIds = responses.map(r => String(r.user));
+    const allResponded = recipients.length > 0 && recipients.every(rid => respondedUserIds.includes(rid));
+    if (allResponded && responses.every(r => r.accept === true)) {
+        // Commit
+        session.ownership = session.pendingOwnership.proposal.map(p => ({ songwriter: p.songwriter, writing: p.writing, publishing: p.publishing }));
+        session.pendingOwnership = undefined;
+        await session.save();
+        await session.populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
+        try {
+            sendSessionUpdate(session._id.toString(), { type: 'ownershipCommitted', session });
+        } catch (e) {
+            console.warn('Failed to send SSE ownership committed:', e);
+        }
+        return res.json({ message: 'Proposal accepted and committed', session });
+    }
+
+    // Otherwise, still pending
+    try {
+        const respondingUser = await User.findById(userId).select('username');
+        sendSessionUpdate(session._id.toString(), { type: 'ownershipResponse', proposalId: proposalId, user: userId, userName: respondingUser?.username || '', accept: Boolean(accept) });
+    } catch (e) {
+        console.warn('Failed to send SSE ownership response update:', e);
+    }
+
+    res.json({ message: 'Response recorded' });
+}));
 
 // Patch to update session fields (e.g., songTitle). Allowed for creator or songwriters.
 userRouter.patch('/session/:id', isAuth, expressAsyncHandler(async (req, res) => {

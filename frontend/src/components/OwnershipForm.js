@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateOwnership, fetchSession } from '../features/sessionSlice';
+import { proposeOwnership, fetchSession } from '../features/sessionSlice';
 
 // Ownership / Song Splits form styled to match other modal forms
 // Important: we derive songwriter IDs the same way SessionDetailsV2 does when
@@ -35,15 +35,16 @@ const OwnershipForm = ({ sessionId, songwriters = [], onClose }) => {
     const handleSubmit = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
         try {
-            await dispatch(updateOwnership({ sessionId, ownership })).unwrap();
+            // Propose the ownership change instead of committing immediately
+            await dispatch(proposeOwnership({ sessionId, ownership })).unwrap();
             try {
                 await dispatch(fetchSession(sessionId)).unwrap();
             } catch (fetchErr) {
-                console.error('OwnershipForm: fetchSession error after update', fetchErr);
+                console.error('OwnershipForm: fetchSession error after proposal', fetchErr);
             }
             onClose && onClose();
         } catch (err) {
-            console.error('OwnershipForm: updateOwnership error', err);
+            console.error('OwnershipForm: proposeOwnership error', err);
         }
     };
 

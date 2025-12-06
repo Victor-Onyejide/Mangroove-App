@@ -29,6 +29,15 @@ export default function AcceptPage() {
     }, [userInfo, sessionId, dispatch]);
 
     const handleAccept = async () => {
+        // If user is not authenticated, store intent and redirect to login/signup
+        if (!userInfo) {
+            dispatch(setSessionId(sessionId));
+            dispatch(setShareLink(true));
+            toast.info('Please sign in or sign up to join the session');
+            navigate('/login');
+            return;
+        }
+
         try {
             const payload = { sessionId };
             if (selectedRole) {

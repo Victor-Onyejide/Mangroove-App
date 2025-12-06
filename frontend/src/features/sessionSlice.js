@@ -50,6 +50,30 @@ export const updateOwnership = createAsyncThunk(
     }
 );
 
+export const proposeOwnership = createAsyncThunk(
+    'session/proposeOwnership',
+    async ({ sessionId, ownership }, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post(`/api/user/session/${sessionId}/ownership/propose`, { ownership }, { withCredentials: true });
+            return data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || err.message);
+        }
+    }
+);
+
+export const respondOwnership = createAsyncThunk(
+    'session/respondOwnership',
+    async ({ sessionId, proposalId, accept }, { rejectWithValue }) => {
+        try {
+            const { data } = await axios.post(`/api/user/session/${sessionId}/ownership/respond`, { proposalId, accept }, { withCredentials: true });
+            return data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data || err.message);
+        }
+    }
+);
+
 const sessionSlice = createSlice({
     name:'sessions',
     initialState:{
