@@ -151,17 +151,17 @@ const handleShareLink = async () => {
       sseRef.current = null;
     }
     // For local development, use:
-    // const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
-    //   withCredentials: true
-    // });
-    // sseRef.current = eventSource;
+    const eventSource = new EventSourcePolyfill(`http://localhost:4000/event/${sessionId}`, {
+      withCredentials: true
+    });
+    sseRef.current = eventSource;
 
     //For production (Heroku):
-    const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`,{
-      withCredentials:true
-    })
+    // const eventSource = new EventSourcePolyfill(`https://mangrove-6abda60a6f55.herokuapp.com/event/${sessionId}`,{
+    //   withCredentials:true
+    // })
 
-    sseRef.current = eventSource;
+    // sseRef.current = eventSource;
 
     eventSource.onopen = () => {
       console.log("EventSource connection opened.");
@@ -191,7 +191,22 @@ const handleShareLink = async () => {
           }
         }
 
-        // A participant rejected the proposal
+        // Backend may emit a partial commit when some participants accept and some reject
+        if (payload?.type === 'ownershipPartiallyCommitted') {
+          const applied = payload.applied || [];
+          const rejected = payload.rejected || [];
+          if (applied.length) {
+            toast.success(`${applied.join(', ')} accepted the split proposal`);
+          }
+          if (rejected.length) {
+            toast.error(`${rejected.join(', ')} rejected the split proposal`);
+          }
+          // Ensure UI reflects committed changes for accepted users
+          dispatch(fetchSession(sessionId));
+          return;
+        }
+
+        // Backwards-compatible: single rejection event
         if (payload?.type === 'ownershipRejected') {
           const rejectedName = payload.rejectedByName;
           if (rejectedName) {

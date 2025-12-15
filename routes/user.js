@@ -329,11 +329,13 @@ userRouter.post('/session/:id/ownership/propose', isAuth, expressAsyncHandler(as
         return { songwriter: songwriterId, writing, publishing };
     });
 
+    // Initialize pending ownership with proposer auto-accepted,
+    // so their own entries are applied on partial commits.
     session.pendingOwnership = {
         proposalId,
         proposal: proposalEntries,
         proposedBy: req.user._id,
-        responses: [],
+        responses: [{ user: req.user._id, accept: true }],
         createdAt: Date.now()
     };
 
@@ -377,26 +379,70 @@ userRouter.post('/session/:id/ownership/respond', isAuth, expressAsyncHandler(as
     const recipients = (session.invitations || []).filter(inv => inv.status === 'accepted').map(i => String(i.invitee));
 
     // Check for any rejection
-    const anyReject = (session.pendingOwnership.responses || []).some(r => r.accept === false);
+    const responses = session.pendingOwnership.responses || [];
+    const anyReject = responses.some(r => r.accept === false);
     if (anyReject) {
-        // Clear pending and notify owner
-        const rejectedBy = session.pendingOwnership.responses.find(r => r.accept === false).user;
+        // Determine accepted and rejected user ids
+        const accepted = responses.filter(r => r.accept === true).map(r => String(r.user));
+        const rejected = responses.filter(r => r.accept === false).map(r => String(r.user));
+
+        // If there are accepted responses, apply the proposed ownership only for those accepted users
+        if (accepted.length > 0) {
+            // Merge accepted proposal entries into existing ownership
+            const existingOwnership = Array.isArray(session.ownership) ? session.ownership.slice() : [];
+            const proposal = session.pendingOwnership.proposal || [];
+
+            accepted.forEach(accUserId => {
+                const propEntry = proposal.find(p => String(p.songwriter) === String(accUserId));
+                if (propEntry) {
+                    const idx = existingOwnership.findIndex(e => String(e.songwriter) === String(accUserId));
+                    if (idx !== -1) {
+                        existingOwnership[idx].writing = propEntry.writing;
+                        existingOwnership[idx].publishing = propEntry.publishing;
+                    } else {
+                        existingOwnership.push({ songwriter: accUserId, writing: propEntry.writing, publishing: propEntry.publishing });
+                    }
+                }
+            });
+
+            session.ownership = existingOwnership;
+        }
+
+        // Prepare notification names
+        const appliedNames = [];
+        const rejectedNames = [];
+        try {
+            // Fetch usernames for applied and rejected lists
+            const appliedPromises = accepted.map(id => User.findById(id).select('username'));
+            const rejectedPromises = rejected.map(id => User.findById(id).select('username'));
+            const appliedUsers = await Promise.all(appliedPromises);
+            const rejectedUsers = await Promise.all(rejectedPromises);
+            appliedUsers.forEach(u => u && appliedNames.push(u.username || ''));
+            rejectedUsers.forEach(u => u && rejectedNames.push(u.username || ''));
+        } catch (e) {
+            console.warn('Failed to resolve applied/rejected usernames', e);
+        }
+
+        // Clear pendingOwnership and save
         session.pendingOwnership = undefined;
         await session.save();
+        await session.populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
+
+        // Broadcast partial commit / rejection info
         try {
-            const rejectedUser = await User.findById(rejectedBy).select('username');
-            sendSessionUpdate(session._id.toString(), { type: 'ownershipRejected', rejectedBy: rejectedBy, rejectedByName: rejectedUser?.username || '' });
+            sendSessionUpdate(session._id.toString(), { type: 'ownershipPartiallyCommitted', applied: appliedNames, rejected: rejectedNames, session });
         } catch (e) {
-            console.warn('Failed to send SSE ownership rejection:', e);
+            console.warn('Failed to send SSE ownership partial commit:', e);
         }
-        return res.json({ message: 'Proposal rejected by a participant' });
+
+        return res.json({ message: 'Proposal processed: applied for accepted participants', applied: appliedNames, rejected: rejectedNames, session });
     }
 
     // If all recipients have responded and all accepted, commit the ownership
-    const responses = session.pendingOwnership.responses || [];
-    const respondedUserIds = responses.map(r => String(r.user));
+    const allResponses = session.pendingOwnership.responses || [];
+    const respondedUserIds = allResponses.map(r => String(r.user));
     const allResponded = recipients.length > 0 && recipients.every(rid => respondedUserIds.includes(rid));
-    if (allResponded && responses.every(r => r.accept === true)) {
+    if (allResponded && allResponses.every(r => r.accept === true)) {
         // Commit
         session.ownership = session.pendingOwnership.proposal.map(p => ({ songwriter: p.songwriter, writing: p.writing, publishing: p.publishing }));
         session.pendingOwnership = undefined;
