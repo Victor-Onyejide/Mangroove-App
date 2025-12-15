@@ -58,12 +58,13 @@ export default function SplitSheetPage() {
 
     doc.setFont('Helvetica', 'normal');
     const writers = session.songwriters || [];
+    const ownership = session.ownership || [];
     writers.forEach((w) => {
       x = marginLeft;
       // Support both shapes: { user: {...}, username } and flat user objects
       const userObj = w && typeof w === 'object' && 'user' in w ? w.user : w;
       const idVal = (userObj && (userObj._id || userObj.id)) || (w && (w._id || w.id)) || w;
-      const ownRec = (session.ownership || []).find(o => String(o.songwriter) === String(idVal));
+      const ownRec = ownership.find(o => String(o.songwriter) === String(idVal));
       const writingPct = ownRec ? (ownRec.writing ?? 0) : 0;
       const publishingPct = ownRec ? (ownRec.publishing ?? 0) : 0;
       const detailLines = [ (userObj && (userObj.username || userObj.stageName)) || w?.username || 'User', userObj?.email || w?.email || '', userObj?.stageName ? `(${userObj.stageName})` : ''];
@@ -99,7 +100,13 @@ export default function SplitSheetPage() {
     doc.text('The undersigned all agree that the information above is correct.', marginLeft, y);
     y += 30;
     doc.setFont('Helvetica', 'normal');
-    writers.forEach((w) => {
+    // Only include signers who have ownership entries (accepted participants)
+    const pdfSigners = writers.filter((w) => {
+      const userObj = w && typeof w === 'object' && 'user' in w ? w.user : w;
+      const idVal = (userObj && (userObj._id || userObj.id)) || (w && (w._id || w.id)) || w;
+      return ownership.some(o => String(o.songwriter) === String(idVal));
+    });
+    pdfSigners.forEach((w) => {
       const nm = w?.username || w?._id || 'User';
       doc.text(`${nm}  —  Signed on ${fmtLong(session.createdAt)}`, marginLeft, y);
       y += 16;
@@ -116,6 +123,11 @@ export default function SplitSheetPage() {
 
   const writers = session.songwriters || [];
   const ownership = session.ownership || [];
+  const signers = writers.filter((w) => {
+    const userObj = w && typeof w === 'object' && 'user' in w ? w.user : w;
+    const idVal = (userObj && (userObj._id || userObj.id)) || (w && (w._id || w.id)) || w;
+    return ownership.some(o => String(o.songwriter) === String(idVal));
+  });
 
   return (
     <div className="splitsheet-page mt-5">
@@ -210,7 +222,7 @@ export default function SplitSheetPage() {
 
         <div className="splitsheet-agreement">The undersigned all agree that the information above is correct.</div>
         <div className="splitsheet-signatures">
-          {writers.map((w) => (
+          {signers.map((w) => (
             <div key={w?._id || w?.id || w} className="signature-item">
               <div className="sig-name">{w?.username || 'Unknown'}</div>
               <div className="sig-date">Signed on {fmtLong(session.createdAt)}</div>

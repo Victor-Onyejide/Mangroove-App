@@ -163,13 +163,11 @@ const userSlice = createSlice({
             })
             .addCase(getCurrentUser.rejected, (state, action) => {
                 state.loading = false;
-                // If we still have a persisted user, keep them "soft logged in" until an action explicitly logs out
-                if (state.userInfo) {
-                    state.isLoggedIn = true; // optimistic; backend cookie may have expired
-                } else {
-                    state.isLoggedIn = false;
-                    state.userInfo = null;
-                }
+                // If fetching the profile failed, treat the session as unauthenticated.
+                // Clear persisted user info so UI won't remain "optimistically" logged in
+                state.isLoggedIn = false;
+                state.userInfo = null;
+                try { localStorage.removeItem('userInfo'); } catch (_) {}
                 state.error = action.payload;
             })
 
