@@ -373,6 +373,23 @@ userRouter.post('/session/:id/ownership/respond', isAuth, expressAsyncHandler(as
         session.pendingOwnership.responses.push({ user: userId, accept: Boolean(accept) });
     }
 
+    // Record response in negotiation log
+    try {
+        const respondingUser = await User.findById(userId).select('username');
+        const respLog = {
+            type: 'response',
+            actor: userId,
+            actorName: respondingUser?.username || '',
+            detail: Boolean(accept) ? 'Accepted split proposal' : 'Rejected split proposal',
+            data: { proposalId, accept: Boolean(accept) },
+            timestamp: Date.now()
+        };
+        session.negotiationLog = session.negotiationLog || [];
+        session.negotiationLog.push(respLog);
+    } catch (e) {
+        console.warn('Failed to record response log entry', e);
+    }
+
     await session.save();
 
     // Determine recipients: all users who have accepted the invitation (joined participants)
@@ -423,14 +440,33 @@ userRouter.post('/session/:id/ownership/respond', isAuth, expressAsyncHandler(as
             console.warn('Failed to resolve applied/rejected usernames', e);
         }
 
+        // Prepare a partial commit log entry and save
+        try {
+            const proposerId = session.pendingOwnership?.proposedBy;
+            const proposerUser = proposerId ? await User.findById(proposerId).select('username') : null;
+            const partialLog = {
+                type: 'partialCommit',
+                actor: proposerId || req.user._id,
+                actorName: proposerUser?.username || '',
+                detail: `Partial commit: applied ${appliedNames.join(', ')}; rejected ${rejectedNames.join(', ')}`,
+                data: { applied: appliedNames, rejected: rejectedNames },
+                timestamp: Date.now()
+            };
+            session.negotiationLog = session.negotiationLog || [];
+            session.negotiationLog.push(partialLog);
+        } catch (e) {
+            console.warn('Failed to prepare partial commit log', e);
+        }
+
         // Clear pendingOwnership and save
         session.pendingOwnership = undefined;
         await session.save();
         await session.populate({ path: 'songwriters.user', select: '_id username stageName affiliation publisher role ownership' });
 
-        // Broadcast partial commit / rejection info
+        // Broadcast partial commit / rejection info and include last log entry
         try {
-            sendSessionUpdate(session._id.toString(), { type: 'ownershipPartiallyCommitted', applied: appliedNames, rejected: rejectedNames, session });
+            const lastLog = session.negotiationLog && session.negotiationLog[session.negotiationLog.length - 1];
+            sendSessionUpdate(session._id.toString(), { type: 'ownershipPartiallyCommitted', applied: appliedNames, rejected: rejectedNames, session, logEntry: lastLog });
         } catch (e) {
             console.warn('Failed to send SSE ownership partial commit:', e);
         }

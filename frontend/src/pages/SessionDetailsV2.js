@@ -403,20 +403,27 @@ const handleShareLink = async () => {
           <section className="sdv2-logs">
             <h3>Negotiations Log</h3>
             <ul className="log-list">
-              <li>
-                <div className="dot" />
-                <div className="log-text">Split sheet ready for {contributors[0]?.name || 'Artist'}.</div>
-              </li>
-              <li>
-                <div className="dot" />
-                <div className="log-text">{contributors[0]?.name || 'Contributor'} transferred ownership update.</div>
-              </li>
-              <li>
-                <div className="dot" />
-                <div className="log-text">New collaborator joined.</div>
-              </li>
+              {(session.negotiationLog || []).length === 0 && (
+                <li>
+                  <div className="dot" />
+                  <div className="log-text">No negotiations yet.</div>
+                </li>
+              )}
+              {(session.negotiationLog || []).slice().reverse().map((entry, idx) => (
+                <li key={entry._id || idx}>
+                  <div className="dot" />
+                  <div className="log-text">
+                    {entry.detail || 'Update'}
+                    {entry.actorName && (
+                      <span className="log-meta"> — {entry.actorName}</span>
+                    )}
+                    {entry.timestamp && (
+                      <span className="log-meta"> · {new Date(entry.timestamp).toLocaleString()}</span>
+                    )}
+                  </div>
+                </li>
+              ))}
             </ul>
-            <button className="btn ghost">Load more logs</button>
           </section>
         </main>
 

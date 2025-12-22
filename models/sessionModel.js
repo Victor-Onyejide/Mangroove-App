@@ -40,6 +40,16 @@ const sessionSchema = new Schema({
             }],
             createdAt: { type: Date }
         }
+            ,
+            // Negotiation log: structured entries describing proposals/responses/commits
+            negotiationLog: [{
+                type: { type: String }, // e.g., 'proposal', 'response', 'partialCommit', 'commit'
+                actor: { type: Schema.Types.ObjectId, ref: 'User' },
+                actorName: { type: String },
+                detail: { type: String },
+                data: { type: Schema.Types.Mixed },
+                timestamp: { type: Date, default: Date.now }
+            }]
 })
 const Session = mongoose.model('Session', sessionSchema);
 export default Session;
